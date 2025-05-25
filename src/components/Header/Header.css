@@ -1,0 +1,170 @@
+/* Navbar base styles */
+.navbar {
+  transition: all 0.3s ease;
+  padding: 1rem 0;
+}
+
+.navbar-dark {
+  background-color: #2196f3;
+}
+
+/* Brand styles */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  color: #fff;
+}
+
+.brand-logo {
+  border-radius: 50%;
+}
+
+.brand-icon {
+  color: #f1c40f;
+}
+
+.brand-text {
+  margin-left: 0.5rem;
+  font-weight: 600;
+}
+
+/* Menu button styles */
+.menu-btn {
+  border: none;
+  background: transparent;
+  padding: 0.5rem;
+  color: #fff;
+}
+
+.menu-btn i {
+  font-size: 1.5rem;
+}
+
+/* Navigation items */
+.navbar-nav {
+  margin-left: auto;
+}
+
+.nav-item {
+  margin: 0 0.5rem;
+}
+
+.nav-link {
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #f1c40f !important;
+}
+
+.nav-icon {
+  margin-right: 0.5rem;
+  font-size: 1rem;
+}
+
+/* Mobile menu styles */
+@media (max-width: 991px) {
+  .navbar-collapse {
+    background-color: #343a40;
+    padding: 1rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .navbar-collapse.show {
+    display: block;
+  }
+
+  .nav-item {
+    margin: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .nav-item:last-child {
+    border-bottom: none;
+  }
+
+  .nav-link {
+    padding: 1rem;
+  }
+
+  .nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+  }
+}
+
+/* Scrolled state */
+.header.scrolled .navbar {
+  padding: 0.5rem 0;
+  background-color: #343a40;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+/* Video styles */
+.video-cover {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.back-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+/* Responsive video adjustments */
+@media (max-width: 1200px) {
+  .video-cover {
+    height: 80vh;
+  }
+}
+
+@media (max-width: 991px) {
+  .video-cover {
+    height: 70vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-cover {
+    height: 60vh;
+  }
+  
+  .back-video {
+    object-position: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .video-cover {
+    height: 50vh;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .video-cover {
+    height: 100vh;
+  }
+}
