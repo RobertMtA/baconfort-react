@@ -1,0 +1,832 @@
+.admin-reservations-container {
+  padding: 2rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h2 {
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.page-header h2 i {
+  color: #e67e22;
+}
+
+.page-header p {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+/* Stats Cards */
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-card i {
+  font-size: 2.5rem;
+  color: #e67e22;
+}
+
+.stat-card.pending i {
+  color: #ffc107;
+}
+
+.stat-card.confirmed i {
+  color: #28a745;
+}
+
+.stat-card.cancelled i {
+  color: #dc3545;
+}
+
+.stat-card h3 {
+  font-size: 2rem;
+  margin: 0;
+  color: #2c3e50;
+}
+
+.stat-card p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.filters button {
+  padding: 0.8rem 1.5rem;
+  border: 2px solid #e9ecef;
+  background: white;
+  color: #495057;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.filters button:hover {
+  border-color: #e67e22;
+  color: #e67e22;
+}
+
+.filters button.active {
+  background: #e67e22;
+  border-color: #e67e22;
+  color: white;
+}
+
+/* Estados de carga */
+.loading, .error, .access-denied, .no-reservations {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loading i, .error i, .access-denied i, .no-reservations i {
+  font-size: 4rem;
+  color: #e67e22;
+  margin-bottom: 1rem;
+}
+
+/* Tabla de reservas */
+.reservations-table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  overflow-x: auto; /* Agregar scroll horizontal si es necesario */
+}
+
+.reservations-table {
+  width: 100%;
+  min-width: 1550px; /* Incrementar para acomodar mejores espacios */
+  border-collapse: collapse;
+  table-layout: fixed; /* Fijar el layout de la tabla */
+}
+
+.reservations-table th {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: white;
+  padding: 1.2rem 0.8rem;
+  text-align: left;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 3px solid #e67e22;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reservations-table th:nth-child(8) {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+  border-left: 3px solid #2c3e50;
+}
+
+/* Anchuras específicas para cada columna - Mejoradas */
+.reservations-table th:nth-child(1), /* Usuario */
+.reservations-table td:nth-child(1) {
+  width: 200px;
+  padding-left: 1rem;
+}
+
+.reservations-table th:nth-child(2), /* Propiedad */
+.reservations-table td:nth-child(2) {
+  width: 220px;
+}
+
+.reservations-table th:nth-child(3), /* Fechas */
+.reservations-table td:nth-child(3) {
+  width: 180px;
+  text-align: center;
+}
+
+.reservations-table th:nth-child(4), /* Huéspedes */
+.reservations-table td:nth-child(4) {
+  width: 100px;
+  text-align: center;
+}
+
+.reservations-table th:nth-child(5), /* Contacto */
+.reservations-table td:nth-child(5) {
+  width: 200px;
+}
+
+.reservations-table th:nth-child(6), /* Estado */
+.reservations-table td:nth-child(6) {
+  width: 140px;
+  text-align: center;
+}
+
+.reservations-table th:nth-child(7), /* Creada */
+.reservations-table td:nth-child(7) {
+  width: 130px;
+  text-align: center;
+}
+
+.reservations-table th:nth-child(8), /* Acciones */
+.reservations-table td:nth-child(8) {
+  width: 180px;
+  text-align: center;
+  min-width: 180px;
+  background-color: #f8f9fa;
+  border-left: 3px solid #e9ecef;
+  position: sticky;
+  right: 0;
+  z-index: 5;
+}
+
+.reservations-table td {
+  padding: 1.2rem 0.8rem;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-height: 80px;
+}
+
+.reservations-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.reservations-table tr:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Información de usuario */
+.user-info {
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.user-info strong {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: block;
+}
+
+.user-info small {
+  color: #6c757d;
+  font-size: 0.8rem;
+  display: block;
+  font-style: italic;
+}
+
+/* Información de propiedad */
+.property-info {
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.property-info strong {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.property-info small {
+  color: #6c757d;
+  font-size: 0.75rem;
+  display: block;
+  background: #f8f9fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  font-family: 'Courier New', monospace;
+}
+
+/* Información de fechas */
+.dates-info {
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: center;
+}
+
+.dates-info > div {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.85rem;
+  display: block;
+}
+
+.dates-info small {
+  color: #e67e22;
+  font-weight: 600;
+  font-size: 0.75rem;
+  display: block;
+  background: #fff3cd;
+  padding: 0.2rem 0.4rem;
+  border-radius: 12px;
+  margin-top: 0.2rem;
+}
+
+/* Información de contacto */
+.contact-info {
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.contact-info > div {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.contact-info small {
+  color: #6c757d;
+  font-size: 0.8rem;
+  display: block;
+  background: #e8f5e8;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #d4edda;
+}
+
+/* Información de huéspedes */
+.guests-info {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+/* Información de fecha de creación */
+.created-info {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #6c757d;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Status badges mejorados */
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.status-badge::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-pending {
+  background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+  color: #856404;
+  border-color: #ffeaa7;
+}
+
+.status-pending::before {
+  background: #ffc107;
+  box-shadow: 0 0 6px rgba(255, 193, 7, 0.6);
+}
+
+.status-confirmed {
+  background: linear-gradient(135deg, #d4edda, #a8e6a3);
+  color: #155724;
+  border-color: #a8e6a3;
+}
+
+.status-confirmed::before {
+  background: #28a745;
+  box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+}
+
+.status-cancelled {
+  background: linear-gradient(135deg, #f8d7da, #f5b7b1);
+  color: #721c24;
+  border-color: #f5b7b1;
+}
+
+.status-cancelled::before {
+  background: #dc3545;
+  box-shadow: 0 0 6px rgba(220, 53, 69, 0.6);
+}
+
+.status-completed {
+  background: linear-gradient(135deg, #d1ecf1, #a2d5f2);
+  color: #0c5460;
+  border-color: #a2d5f2;
+}
+
+.status-completed::before {
+  background: #17a2b8;
+  box-shadow: 0 0 6px rgba(23, 162, 184, 0.6);
+}
+
+.status-unknown {
+  background: linear-gradient(135deg, #e2e3e5, #ced4da);
+  color: #383d41;
+  border-color: #ced4da;
+}
+
+.status-unknown::before {
+  background: #6c757d;
+  box-shadow: 0 0 6px rgba(108, 117, 125, 0.6);
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.view-btn {
+  background: #17a2b8;
+  color: white;
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 0.85rem;
+  min-width: 36px;
+}
+
+.view-btn:hover {
+  background: #138496;
+}
+
+.view-btn i {
+  margin: 0;
+}
+
+.retry-btn {
+  background-color: #e67e22;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.retry-btn:hover {
+  background-color: #d35400;
+}
+
+/* Botones de acción específicos */
+.confirm-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 0.85rem;
+  min-width: 36px;
+}
+
+.confirm-btn:hover {
+  background: #218838;
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 0.85rem;
+  min-width: 36px;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+}
+
+.complete-btn {
+  background: #6f42c1;
+  color: white;
+  border: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  font-size: 0.85rem;
+  min-width: 36px;
+}
+
+.complete-btn:hover {
+  background: #5a32a3;
+}
+
+/* Selector de estado mejorado */
+.status-selector {
+  background: white;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-top: 0.6rem;
+  width: 100%;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  color: #495057;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.status-selector:hover {
+  border-color: #e67e22;
+  background: #fff8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.status-selector:focus {
+  outline: none;
+  border-color: #e67e22;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.25);
+}
+
+/* Ajustar acciones para más espacio y mejor presentación */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: center;
+  min-width: 150px;
+  padding: 0.8rem;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+/* Grupo de botones rápidos */
+.quick-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Botones de acción mejorados */
+.view-btn, .confirm-btn, .cancel-btn, .complete-btn {
+  min-width: 44px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.view-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+}
+
+.view-btn:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #28a745, #218838);
+}
+
+.confirm-btn:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(135deg, #c82333, #bd2130);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.complete-btn {
+  background: linear-gradient(135deg, #6f42c1, #5a32a3);
+}
+
+.complete-btn:hover {
+  background: linear-gradient(135deg, #5a32a3, #4e2a8e);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .reservations-table-container {
+    overflow-x: auto;
+  }
+  
+  .reservations-table {
+    min-width: 1000px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-reservations-container {
+    padding: 1rem;
+  }
+  
+  .page-header h2 {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .page-header p {
+    font-size: 1rem;
+  }
+  
+  /* Stats Cards - Stack vertically on mobile */
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stat-card h3 {
+    font-size: 1.5rem;
+  }
+  
+  /* Filters - Stack buttons */
+  .filters {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .filters button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  /* Table - Card view for mobile */
+  .reservations-table-container {
+    border-radius: 8px;
+    margin: 0 -1rem;
+    overflow: visible;
+  }
+  
+  .reservations-table {
+    display: none; /* Hide table on mobile */
+  }
+  
+  /* Mobile card layout */
+  .mobile-reservations {
+    display: block;
+  }
+  
+  .reservation-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .reservation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .reservation-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1rem;
+  }
+  
+  .reservation-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f1f1;
+  }
+  
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+  
+  .detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.85rem;
+  }
+  
+  .detail-value {
+    color: #2c3e50;
+    font-size: 0.9rem;
+    text-align: right;
+  }
+  
+  .mobile-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  .mobile-actions button {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+  
+  .mobile-actions .status-selector {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-reservations-container {
+    padding: 0.5rem;
+  }
+  
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .reservation-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .mobile-actions {
+    flex-direction: column;
+  }
+  
+  .mobile-actions button,
+  .mobile-actions .status-selector {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Desktop - Show table, hide mobile cards */
+@media (min-width: 769px) {
+  .mobile-reservations {
+    display: none;
+  }
+  
+  .reservations-table {
+    display: table !important;
+  }
+}
+
+/* Mejoras adicionales para la tabla */
+.reservations-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.reservations-table tbody tr:nth-child(even):hover {
+  background-color: #f1f1f1;
+}
+
+/* Ajuste del contenedor de fecha de creación */
+.reservations-table td:nth-child(7) small {
+  font-size: 0.75rem;
+  color: #6c757d;
+  white-space: nowrap;
+}

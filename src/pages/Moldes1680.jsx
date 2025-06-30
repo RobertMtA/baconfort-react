@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 import PriceCard from "../components/PriceCard/PriceCard";
 import Gallery from '../components/Gallery/Gallery';
 import ReservationForm from '../components/ReservationForm/ReservationForm';
+import ReviewsSection from '../components/ReviewsSection/ReviewsSection';
 import Loading from '../components/Loading/Loading';
+import { useGallery } from '../hooks/useGallery';
+import { useProperty } from '../hooks/useProperty';
 import '../styles/departamento.css';
 import NotFound from './NotFound';
 
@@ -13,7 +16,22 @@ function Moldes1680() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const images = [
+  const { 
+    images: galleryImages, 
+    loading: isGalleryLoading, 
+    error: galleryError,
+    refreshGallery 
+  } = useGallery('moldes1680');
+
+  // Cargar información completa de la propiedad desde el backend
+  const {
+    property,
+    loading: isPropertyLoading,
+    error: propertyError
+  } = useProperty('moldes1680');
+
+  // Fallback images if database is empty
+  const fallbackImages = [
     'img/img-moldes1.jpg',
     'img/img-moldes2.jpg',
     'img/img-moldes3.jpg',
@@ -22,10 +40,21 @@ function Moldes1680() {
     'img/img-moldes6.jpg',
   ];
 
+  // Use gallery images from database or fallback to static images
+  const images = galleryImages.length > 0 ? galleryImages : fallbackImages;
+
   const openGallery = (index) => {
     setCurrentImageIndex(index);
     setShowGallery(true);
   };
+
+  useEffect(() => {
+    // Log de la información de la propiedad cuando se carga
+    if (property) {
+      console.log('🏠 MOLDES1680: Propiedad cargada desde backend:', property);
+      console.log('💰 MOLDES1680: Precios recibidos:', property.prices);
+    }
+  }, [property]);
 
   useEffect(() => {
     // Simular carga de imágenes
@@ -93,6 +122,9 @@ function Moldes1680() {
                   <li className="nav-item">
                     <a className="nav-link" href="#precio-de-alquiler"><i className="fas fa-tag nav-icon"></i> Precio</a>
                   </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="#reseñas"><i className="fas fa-star nav-icon"></i> Reseñas</a>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -148,19 +180,19 @@ function Moldes1680() {
                     <div className="pricing-cards">
                       <PriceCard 
                         title="Por Mes"
-                        amount="USD 1200"
+                        amount={property?.prices?.monthly || "USD 1200"}
                         details="No incluye servicios y limpieza semanal"
                         whatsappMessage="Me interesa el departamento en Moldes 1680 para alquiler mensual"
                       />
                       <PriceCard 
                         title="Por Semana"
-                        amount="USD 400"
+                        amount={property?.prices?.weekly || "USD 400"}
                         details="No incluye una limpieza"
                         whatsappMessage="Me interesa el departamento en Moldes 1680 para alquiler semanal"
                       />
                       <PriceCard 
                         title="Por Día"
-                        amount="USD 70"
+                        amount={property?.prices?.daily || "USD 70"}
                         details="Mínimo 3 noches"
                         whatsappMessage="Me interesa el departamento en Moldes 1680 para alquiler diario"
                       />
@@ -175,17 +207,17 @@ function Moldes1680() {
                     <div className="description">
                       <p lang="es">
                         <strong>En Español:</strong><br />
-                        Exclusivo departamento familiar en Belgrano. Ubicación privilegiada cerca de Av. Cabildo y Barrancas de Belgrano. Dos dormitorios amplios, living comedor, cocina equipada y baño completo. Ideal para familias o grupos. Excelente conectividad, próximo a la línea D de subte. Zona residencial segura con todos los servicios.
+                        {property?.description?.es || "Exclusivo departamento de dos ambientes en edificio boutique con amenities premium en Belgrano. Diseño moderno, espacios luminosos y todas las comodidades para una estadía perfecta."}
                       </p>
                       <hr />
                       <p lang="en">
                         <strong>In English:</strong><br />
-                        Exclusive family apartment in Belgrano. Prime location near Av. Cabildo and Barrancas de Belgrano. Two spacious bedrooms, living-dining room, equipped kitchen, and full bathroom. Perfect for families or groups. Excellent connectivity, close to subway line D. Safe residential area with all services.
+                        {property?.description?.en || "Exclusive two-room apartment in a boutique building with premium amenities in Belgrano. Modern design, bright spaces, and all the comforts for a perfect stay."}
                       </p>
                       <hr />
                       <p lang="pt">
                         <strong>Em Português:</strong><br />
-                        Apartamento familiar exclusivo em Belgrano. Localização privilegiada próxima à Av. Cabildo e Barrancas de Belgrano. Dois quartos espaçosos, sala de estar e jantar, cozinha equipada e banheiro completo. Ideal para famílias ou grupos. Excelente conectividade, próximo à linha D do metrô. Área residencial segura com todos os serviços.
+                        {property?.description?.pt || "Apartamento exclusivo de dois ambientes em edifício boutique com amenidades premium em Belgrano. Design moderno, espaços luminosos e todas as comodidades para uma estadia perfeita."}
                       </p>
                     </div>
                   </div>
@@ -222,7 +254,33 @@ function Moldes1680() {
                   </div>
 
                   <section className="gallery-section">
-                    <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        {/* Debug visual */}
+                        <div style={{ 
+                          padding: '5px 10px', 
+                          fontSize: '12px', 
+                          borderRadius: '4px',
+                          backgroundColor: galleryImages.length > 0 ? '#d4edda' : '#f8d7da',
+                          color: galleryImages.length > 0 ? '#155724' : '#721c24',
+                          border: '1px solid ' + (galleryImages.length > 0 ? '#c3e6cb' : '#f5c6cb')
+                        }}>
+                          DB: {galleryImages.length} | Total: {images.length}
+                          {isGalleryLoading ? ' (Cargando...)' : ''}
+                          {galleryError ? ' (Error)' : ''}
+                          {!isGalleryLoading && galleryImages.length > 0 ? ' ✅' : ''}
+                          {!isGalleryLoading && galleryImages.length === 0 ? ' (Usando fallback)' : ''}
+                        </div>
+                        <button 
+                          onClick={refreshGallery}
+                          className="btn btn-sm btn-outline-primary"
+                          title="Actualizar galería"
+                        >
+                          <i className="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                      </div>
+                    </div>
                     <div className="gallery-container">
                       {images.map((img, index) => (
                         <div key={index} className="gallery-item" onClick={() => openGallery(index)}>
@@ -297,6 +355,9 @@ function Moldes1680() {
                 </div>
               </div>
             </div>
+
+            {/* Sección de Reseñas */}
+            <ReviewsSection propertyId="moldes1680" />
           </main>
           
           {showGallery && (

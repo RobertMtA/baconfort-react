@@ -14,6 +14,10 @@ function Home() {
       <main className="home">
         <h1>BA.CONFORT - Alquiler Temporario</h1>
         <h2>Vive Buenos Aires - Tu experiencia porteña comienza aquí.</h2>
+        
+        {/* Carrusel principal */}
+        <Carousel />
+        
         <p>
           Bienvenido a BA CONFORT, tu hogar temporal en Buenos Aires. Ofrecemos departamentos y casas únicas en las mejores zonas de la ciudad: Palermo, Belgrano y Recoleta.
         </p>
@@ -23,9 +27,6 @@ function Home() {
         <p className="highlight-text">¡Te esperamos para que vivas una experiencia única!</p>
         
         <hr />
-        
-        {/* Carousel Component */}
-        <Carousel />
         
         <h2 className="location-title"><i className="fas fa-map-marker-alt text-primary me-2"></i>¿Dónde Estamos?</h2>
         

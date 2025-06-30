@@ -3,58 +3,96 @@ import { Link } from 'react-router-dom';
 import PriceCard from "../components/PriceCard/PriceCard";
 import Gallery from '../components/Gallery/Gallery';
 import ReservationForm from '../components/ReservationForm/ReservationForm';
+import ReviewsSection from '../components/ReviewsSection/ReviewsSection';
 import Loading from '../components/Loading/Loading';
+import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
+import { useNavbar } from '../hooks/useNavbar';
+import { useGallery } from '../hooks/useGallery';
+import { useAdmin } from '../context/AdminContext';
+import { useProperty } from '../hooks/useProperty';
+import ImageUtils from '../utils/ImageUtils';
 import '../styles/departamento.css';
 import NotFound from './NotFound';
 
 
-// Move images array outside component
-const galleryImages = [
-  '/img/img-convencion1.jpg',
-  '/img/img-convencion2.jpg',
-  '/img/img-convencion3.jpg',
-  '/img/img-convencion4.jpg',
-  '/img/img-convencion5.jpg',
-  '/img/img-convencion6.jpg',
-  '/img/img-convencion7.jpg',
-  '/img/img-convencion8.jpg',
-  '/img/img-convencion9.jpg',
-  '/img/img-convencion10.jpg',
-  '/img/img-convencion11.jpg'
-];
 
 function Convencion1994() {
   const [showGallery, setShowGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { navbarOpen, toggleNavbar, closeNavbar } = useNavbar();
+  
+  // Usar useProperty para obtener datos de la propiedad del backend
+  const { 
+    property, 
+    loading: propertyLoading, 
+    error: propertyError 
+  } = useProperty('convencion1994');
+  
+  // Cargar galería desde la base de datos
+  const { 
+    images: galleryImages, 
+    loading: galleryLoading, 
+    error: galleryError, 
+    mainImage,
+    refreshGallery 
+  } = useGallery('convencion1994');
+  
+  // Los precios ahora vienen directamente del backend a través de useProperty
+  console.log('🏠 Convencion1994 - Property from backend:', property);
+  
+  // Usar imágenes de la base de datos o fallback a imágenes estáticas
+  const images = galleryImages.length > 0 ? galleryImages : [
+    'img/img-convencion1.jpg',
+    'img/img-convencion2.jpg',
+    'img/img-convencion3.jpg',
+    'img/img-convencion4.jpg',
+    'img/img-convencion5.jpg',
+    'img/img-convencion6.jpg',
+    'img/img-convencion7.jpg',
+    'img/img-convencion8.jpg',
+    'img/img-convencion9.jpg',
+    'img/img-convencion10.jpg',
+    'img/img-convencion11.jpg'
+  ];
 
+  // Procesar imágenes con ImageUtils
+  const processedImages = images.map(img => ImageUtils.getImageSrc(img));
+
+  useEffect(() => {
+    // Simular carga de imágenes y esperar a que se cargue la galería y la propiedad
+    const loadImages = async () => {
+      // Esperar a que la galería y la propiedad terminen de cargar
+      if (galleryLoading || propertyLoading) {
+        return;
+      }
+
+      const images = document.querySelectorAll('img');
+      const promises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+        });
+      });
+
+      await Promise.all(promises);
+      setIsLoading(false);
+    };
+
+    loadImages();
+  }, [galleryLoading, propertyLoading]); // Dependencia del estado de carga de la galería y la propiedad
+
+  // Función para abrir la galería de imágenes
   const openGallery = (index) => {
     setSelectedImage(index);
     setShowGallery(true);
   };
 
   useEffect(() => {
-    const loadImages = async () => {
-      try {
-        const imagePromises = galleryImages.map(src => {
-          return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.src = src;
-            img.onload = resolve;
-            img.onerror = reject;
-          });
-        });
-
-        await Promise.all(imagePromises);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error loading images:', error);
-        setIsLoading(false);
-      }
-    };
-
-    loadImages();
-  }, []);
+    // Log para debugging - mostrar datos de la propiedad cuando cambien
+    console.log('🔄 Convencion1994 - Property or gallery updated:', { property, galleryImages });
+  }, [property, galleryImages]);
 
   return (
     <>
@@ -69,7 +107,7 @@ function Convencion1994() {
               <Link className="navbar-brand" to="/" aria-label="BACONFORT Home">
                 <img 
                   src="/img/logo.jpg" 
-                  alt="BACONFORT Logo" 
+                  alt="BACONFORT" 
                   width="40" 
                   height="40" 
                   className="brand-logo"
@@ -81,27 +119,44 @@ function Convencion1994() {
               <button 
                 className="navbar-toggler" 
                 type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation"
+                onClick={toggleNavbar}
+                aria-controls="navbarNavConvencion" 
+                aria-expanded={navbarOpen} 
+                aria-label="Abrir menú de navegación"
               >
                 <span className="navbar-toggler-icon"></span>
               </button>
-              <div className="collapse navbar-collapse" id="navbarNav">
+              <div className={`navbar-collapse ${navbarOpen ? 'show' : 'collapse'}`} id="navbarNavConvencion">
                 <ul className="navbar-nav ms-auto">
                   <li className="nav-item">
-                    <a className="nav-link" href="/"><i className="fas fa-home nav-icon"></i> Inicio</a>
+                    <a className="nav-link" href="/" onClick={closeNavbar} aria-label="Ir al inicio">
+                      <i className="fas fa-home nav-icon" aria-hidden="true"></i> 
+                      Inicio
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#servicios"><i className="fas fa-list nav-icon"></i> Detalles</a>
+                    <a className="nav-link" href="#servicios" onClick={closeNavbar} aria-label="Ver detalles de la propiedad">
+                      <i className="fas fa-list nav-icon" aria-hidden="true"></i> 
+                      Detalles
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#ubicacion"><i className="fas fa-map-marker-alt nav-icon"></i> Ubicación</a>
+                    <a className="nav-link" href="#ubicacion" onClick={closeNavbar} aria-label="Ver ubicación en el mapa">
+                      <i className="fas fa-map-marker-alt nav-icon" aria-hidden="true"></i> 
+                      Ubicación
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#precio-de-alquiler"><i className="fas fa-tag nav-icon"></i> Precio</a>
+                    <a className="nav-link" href="#reseñas" onClick={closeNavbar} aria-label="Ver reseñas de huéspedes">
+                      <i className="fas fa-star nav-icon" aria-hidden="true"></i> 
+                      Reseñas
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="#precio-de-alquiler" onClick={closeNavbar} aria-label="Ver precios de alquiler">
+                      <i className="fas fa-tag nav-icon" aria-hidden="true"></i> 
+                      Precio
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -110,18 +165,16 @@ function Convencion1994() {
 
           {/* Sección Hero con Video */}
           <div className="video-hero">
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="metadata"
+            <VideoPlayer
+              src={ImageUtils.getVideoSrc(property?.heroVideo) || "/video/video-portada-convencion-1994.mp4"}
+              poster={ImageUtils.getImageSrc(mainImage || property?.coverImage || "/img/img-convencion1.jpg")}
+              title={property?.title || "Departamento Convención 1994"}
+              autoPlay={true}
+              muted={true}
+              loop={true}
+              controls={false}
               className="hero-video"
-              poster="img/img-convencion1.jpg"
-            >
-              <source src="/video/video-portada-convencion-1994.mp4" type="video/mp4" />
-              <img src="img/img-convencion11.jpg" alt="Departamento Convención 1994" />
-            </video>
+            />
             <div className="video-overlay"></div>
             <div className="video-content">
             
@@ -155,24 +208,25 @@ function Convencion1994() {
                       </div>
                     </div>
                   </div>
+
                   <div id="precio-de-alquiler" className="pricing-container">
                     <h2 className="pricing-title"><i className="fas fa-dollar-sign"></i> Valor del Alquiler</h2>
                     <div className="pricing-cards">
                       <PriceCard 
                         title="Por Mes"
-                        amount="USD 1200"
+                        amount={property?.prices?.monthly || "1200"}
                         details="Incluye servicios y limpieza semanal"
                         whatsappMessage="Me interesa el departamento en Convención 1994 para alquiler mensual"
                       />
                       <PriceCard 
                         title="Por Semana"
-                        amount="USD 400"
+                        amount={property?.prices?.weekly || "400"}
                         details="Incluye una limpieza"
                         whatsappMessage="Me interesa el departamento en Convención 1994 para alquiler semanal"
                       />
                       <PriceCard 
                         title="Por Día"
-                        amount="USD 70"
+                        amount={property?.prices?.daily || "70"}
                         details="Mínimo 3 noches"
                         whatsappMessage="Me interesa el departamento en Convención 1994 para alquiler diario"
                       />
@@ -187,17 +241,17 @@ function Convencion1994() {
                     <div className="description">
                       <p lang="es">
                         <strong>En Español:</strong><br />
-                        Exclusivo estudio para dos personas en edificio boutique con amenities premium en Palermo Hollywood. Diseño moderno, espacios luminosos y todas las comodidades para una estadía perfecta. Ubicación privilegiada cerca de restaurantes, bares y transporte público.
+                        {property?.description?.es || "Exclusivo estudio para dos personas en edificio boutique con amenities premium en Palermo Hollywood."}
                       </p>
                       <hr />
                       <p lang="en">
                         <strong>In English:</strong><br />
-                        Exclusive studio for two in a boutique building with premium amenities in Palermo Hollywood. Modern design, bright spaces, and all the comforts for a perfect stay. Prime location near restaurants, bars, and public transportation.
+                        {property?.description?.en || "Exclusive studio for two in a boutique building with premium amenities in Palermo Hollywood."}
                       </p>
                       <hr />
                       <p lang="pt">
                         <strong>Em Português:</strong><br />
-                        Estúdio exclusivo para duas pessoas em edifício boutique com amenidades premium em Palermo Hollywood. Design moderno, espaços luminosos e todas as comodidades para uma estadia perfeita. Localização privilegiada próxima a restaurantes, bares e transporte público.
+                        {property?.description?.pt || "Estúdio exclusivo para duas pessoas em edifício boutique com amenidades premium em Palermo Hollywood."}
                       </p>
                     </div>
                   </div>
@@ -208,37 +262,64 @@ function Convencion1994() {
                       <div className="col-md-4">
                         <h4 className="h6 mb-3"><i className="fas fa-home"></i> Departamento</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-tv"></i> Smart TV 32"</li>
-                          <li><i className="fas fa-wifi"></i> WiFi 300MB Fibra Óptica</li>
-                          <li><i className="fas fa-snowflake"></i> Aire Acondicionado F/C</li>
-                          <li><i className="fas fa-door-closed"></i> Balcón con Vista</li>
+                          {property?.amenities?.departamento?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-tv"></i> Smart TV 32"</li>
+                              <li><i className="fas fa-wifi"></i> WiFi 300MB Fibra Óptica</li>
+                              <li><i className="fas fa-snowflake"></i> Aire Acondicionado F/C</li>
+                              <li><i className="fas fa-door-closed"></i> Balcón con Vista</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                       <div className="col-md-4">
                         <h4 className="h6 mb-3"><i className="fas fa-plus-circle"></i> Servicios</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-shield-alt"></i> Seguridad 24hs</li>
-                          <li><i className="fas fa-tshirt"></i> Lavarropas y Laundry</li>
-                          <li><i className="fas fa-concierge-bell"></i> Recepción</li>
+                          {property?.amenities?.servicios?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-shield-alt"></i> Seguridad 24hs</li>
+                              <li><i className="fas fa-tshirt"></i> Lavarropas y Laundry</li>
+                              <li><i className="fas fa-concierge-bell"></i> Recepción</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                       <div className="col-md-4">
                         <h4 className="h6 mb-3"><i className="fas fa-spa"></i> Amenities</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-dumbbell"></i> Gimnasio</li>
-                          <li><i className="fas fa-swimming-pool"></i> Piscina Climatizada</li>
-                          <li><i className="fas fa-hot-tub"></i> Sauna & Jacuzzi</li>
-                          <li><i className="fas fa-sun"></i> Solarium & Terraza</li>
-                          <li><i className="fas fa-users"></i> SUM</li>
+                          {property?.amenities?.amenitiesEdificio?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-dumbbell"></i> Gimnasio</li>
+                              <li><i className="fas fa-swimming-pool"></i> Piscina Climatizada</li>
+                              <li><i className="fas fa-hot-tub"></i> Sauna & Jacuzzi</li>
+                              <li><i className="fas fa-sun"></i> Solarium & Terraza</li>
+                              <li><i className="fas fa-users"></i> SUM</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                     </div>
                   </div>
 
                   <section className="gallery-section">
-                    <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                      <button 
+                        onClick={refreshGallery}
+                        className="btn btn-sm btn-outline-primary"
+                        title="Actualizar galería"
+                      >
+                        <i className="fas fa-sync-alt"></i> Actualizar
+                      </button>
+                    </div>
                     <div className="gallery-container">
-                      {galleryImages.map((img, index) => (
+                      {processedImages.map((img, index) => (
                         <div key={index} className="gallery-item" onClick={() => openGallery(index)}>
                           <img src={img} alt={`Departamento Convención 1994 - ${index + 1}`} loading="lazy" />
                         </div>
@@ -295,6 +376,13 @@ function Convencion1994() {
               </div>
             </section>
 
+            {/* Sección de Reseñas */}
+            <section id="reseñas" className="py-5">
+              <div className="container">
+                <ReviewsSection propertyId="convencion1994" />
+              </div>
+            </section>
+
             <div className="house-rules mb-5 container">
               <h3 className="h5 mb-3 text-center">Información Importante</h3>
               <div className="row">
@@ -320,7 +408,7 @@ function Convencion1994() {
           
           {showGallery && (
             <Gallery 
-              images={galleryImages}
+              images={processedImages}
               currentIndex={selectedImage}
               onClose={() => setShowGallery(false)}
             />

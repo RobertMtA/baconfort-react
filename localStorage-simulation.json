@@ -1,0 +1,38 @@
+{
+  "properties": {
+    "moldes1680": {
+      "id": "moldes1680",
+      "title": "Moldes 1680",
+      "address": "Moldes 1680, Buenos Aires",
+      "prices": {
+        "monthly": "USD 1100",
+        "weekly": "USD 350",
+        "daily": "USD 65"
+      },
+      "reviews": [
+        {
+          "id": "1",
+          "guestName": "María González",
+          "rating": 5,
+          "comment": "Excelente departamento, muy bien ubicado y con todas las comodidades.",
+          "date": "2025-05-15",
+          "verified": true,
+          "highlight": true,
+          "createdAt": "2025-05-16T10:00:00.000Z"
+        },
+        {
+          "id": "1751146067471",
+          "guestName": "Roberto",
+          "rating": 4,
+          "comment": "Muy buen departamento, limpio y cómodo. La ubicación es excelente y el edificio tiene buenas amenidades. Recomendado para estadías cortas.",
+          "date": "2025-06-27",
+          "verified": false,
+          "highlight": false,
+          "status": "pending",
+          "isGuestSubmission": true,
+          "createdAt": "2025-06-28T21:27:47.471Z"
+        }
+      ]
+    }
+  }
+}

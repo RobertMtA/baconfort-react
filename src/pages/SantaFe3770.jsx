@@ -4,36 +4,108 @@ import PriceCard from "../components/PriceCard/PriceCard";
 import Gallery from '../components/Gallery/Gallery';
 import ReservationForm from '../components/ReservationForm/ReservationForm';
 import Loading from '../components/Loading/Loading';
+import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
+import ReviewsSection from '../components/ReviewsSection/ReviewsSection';
+import { useNavbar } from '../hooks/useNavbar';
+import { useGallery } from '../hooks/useGallery';
+import { useProperty } from '../hooks/useProperty';
+import { useAdmin } from '../context/AdminContext';
+import ImageUtils from '../utils/ImageUtils';
 import '../styles/departamento.css';
 import NotFound from './NotFound';
 
-// Move images array outside component
-const galleryImages = [
-  '/img/img-santa-fe1.jpg',
-  '/img/img-santa-fe2.jpg',
-  '/img/img-santa-fe3.jpg',
-  '/img/img-santa-fe4.jpg',
-  '/img/img-santa-fe5.jpg',
-  '/img/img-santa-fe6.jpg',
-  '/img/img-santa-fe7.jpg',
-  '/img/img-santa-fe8.jpg',
-  '/img/img-santa-fe9.jpg',
-  '/img/img-santa-fe10.jpg',
-  '/img/img-santa-fe11.jpg',
-  '/img/img-santa-fe12.jpg',
-  '/img/img-santa-fe13.jpg',
-  '/img/img-santa-fe14.jpg',
-  '/img/img-santa-fe15.jpg',
-  '/img/img-santa-fe16.jpg',
-  '/img/img-santa-fe17.jpg',
-  '/img/img-santa-fe18.jpg',
-  '/img/img-santa-fe19.jpg'
-];
+
 
 function SantaFe3770() {
   const [showGallery, setShowGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { navbarOpen, toggleNavbar, closeNavbar } = useNavbar();
+  const { data, loadPropertiesFromBackend } = useAdmin();
+  
+  // Cargar galería desde la base de datos
+  const { 
+    images: galleryImages, 
+    loading: galleryLoading, 
+    error: galleryError, 
+    mainImage,
+    refreshGallery 
+  } = useGallery('santafe3770');
+
+  // Cargar información completa de la propiedad desde el backend
+  const {
+    property: backendProperty,
+    loading: isPropertyLoading,
+    error: propertyError
+  } = useProperty('santafe3770');
+  
+  // Obtener datos de la propiedad desde el contexto admin como fallback
+  const adminProperty = data?.properties?.['santa-fe-3770'];
+  
+  // Usar datos del backend si están disponibles, sino usar datos del admin
+  const property = backendProperty || adminProperty;
+
+  useEffect(() => {
+    // Log de la información de la propiedad cuando se carga
+    if (backendProperty) {
+      console.log('🏠 SANTA FE 3770: Propiedad cargada desde backend:', backendProperty);
+      console.log('💰 SANTA FE 3770: Precios recibidos:', backendProperty.prices);
+    }
+    if (adminProperty) {
+      console.log('🏠 SANTA FE 3770: Propiedad desde admin context:', adminProperty);
+      console.log('💰 SANTA FE 3770: Precios admin:', adminProperty.prices);
+    }
+  }, [backendProperty, adminProperty]);
+  
+  // Usar imágenes de la base de datos o fallback a imágenes estáticas
+  const images = galleryImages.length > 0 ? galleryImages : [
+    '/img/img-santa-fe1.jpg',
+    '/img/img-santa-fe2.jpg',
+    '/img/img-santa-fe3.jpg',
+    '/img/img-santa-fe4.jpg',
+    '/img/img-santa-fe5.jpg',
+    '/img/img-santa-fe6.jpg',
+    '/img/img-santa-fe7.jpg',
+    '/img/img-santa-fe8.jpg',
+    '/img/img-santa-fe9.jpg',
+    '/img/img-santa-fe10.jpg',
+    '/img/img-santa-fe11.jpg',
+    '/img/img-santa-fe12.jpg',
+    '/img/img-santa-fe13.jpg',
+    '/img/img-santa-fe14.jpg',
+    '/img/img-santa-fe15.jpg',
+    '/img/img-santa-fe16.jpg',
+    '/img/img-santa-fe17.jpg',
+    '/img/img-santa-fe18.jpg',
+    '/img/img-santa-fe19.jpg'
+  ];
+
+  // Procesar imágenes con ImageUtils
+  const processedImages = images.map(img => ImageUtils.getImageSrc(img));
+
+  useEffect(() => {
+    // Simular carga de imágenes y esperar a que se cargue la galería
+    const loadImages = async () => {
+      // Esperar a que la galería termine de cargar
+      if (galleryLoading) {
+        return;
+      }
+
+      const images = document.querySelectorAll('img');
+      const promises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+        });
+      });
+
+      await Promise.all(promises);
+      setIsLoading(false);
+    };
+
+    loadImages();
+  }, [galleryLoading]); // Dependencia del estado de carga de la galería
 
   const openGallery = (index) => {
     setSelectedImage(index);
@@ -43,7 +115,7 @@ function SantaFe3770() {
   useEffect(() => {
     const loadImages = async () => {
       try {
-        const imagePromises = galleryImages.map(src => {
+        const imagePromises = processedImages.map(src => {
           return new Promise((resolve, reject) => {
             const img = new Image();
             img.src = src;
@@ -61,7 +133,7 @@ function SantaFe3770() {
     };
 
     loadImages();
-  }, []);
+  }, [processedImages]);
 
   return (
     <>
@@ -88,27 +160,44 @@ function SantaFe3770() {
               <button 
                 className="navbar-toggler" 
                 type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
+                onClick={toggleNavbar}
                 aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation"
+                aria-expanded={navbarOpen} 
+                aria-label="Abrir menú de navegación"
               >
                 <span className="navbar-toggler-icon"></span>
               </button>
-              <div className="collapse navbar-collapse" id="navbarNav">
+              <div className={`navbar-collapse ${navbarOpen ? 'show' : 'collapse'}`} id="navbarNav">
                 <ul className="navbar-nav ms-auto">
                   <li className="nav-item">
-                    <a className="nav-link" href="/"><i className="fas fa-home nav-icon"></i> Inicio</a>
+                    <a className="nav-link" href="/" onClick={closeNavbar} aria-label="Ir al inicio">
+                      <i className="fas fa-home nav-icon" aria-hidden="true"></i> 
+                      Inicio
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#servicios"><i className="fas fa-list nav-icon"></i> Detalles</a>
+                    <a className="nav-link" href="#servicios" onClick={closeNavbar} aria-label="Ver detalles de la propiedad">
+                      <i className="fas fa-list nav-icon" aria-hidden="true"></i> 
+                      Detalles
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#ubicacion"><i className="fas fa-map-marker-alt nav-icon"></i> Ubicación</a>
+                    <a className="nav-link" href="#ubicacion" onClick={closeNavbar} aria-label="Ver ubicación en el mapa">
+                      <i className="fas fa-map-marker-alt nav-icon" aria-hidden="true"></i> 
+                      Ubicación
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#precio-de-alquiler"><i className="fas fa-tag nav-icon"></i> Precio</a>
+                    <a className="nav-link" href="#reseñas" onClick={closeNavbar} aria-label="Ver reseñas de huéspedes">
+                      <i className="fas fa-star nav-icon" aria-hidden="true"></i> 
+                      Reseñas
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="#precio-de-alquiler" onClick={closeNavbar} aria-label="Ver precios de alquiler">
+                      <i className="fas fa-tag nav-icon" aria-hidden="true"></i> 
+                      Precio
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -117,18 +206,16 @@ function SantaFe3770() {
 
           {/* Sección Hero con Video */}
           <div className="video-hero">
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="metadata"
+            <VideoPlayer
+              src={ImageUtils.getVideoSrc(property?.heroVideo) || "/video/video-portada-santa-fe-3770.mp4"}
+              poster={ImageUtils.getImageSrc(mainImage || property?.coverImage || "/img/img-santa-fe10.jpg")}
+              title={property?.title || "Departamento Santa Fe 3770"}
+              autoPlay={true}
+              muted={true}
+              loop={true}
+              controls={false}
               className="hero-video"
-              poster="img/img-santa-fe10.jpg"
-            >
-              <source src="video/video-portada-pricipal.mp4" type="video/mp4" />
-              <img src="img/img-santa-fe15.jpg" alt="Departamento Santa Fe 3770 - Confort y Espacio" />
-            </video>
+            />
             <div className="video-overlay"></div>
             <div className="video-content">
             
@@ -167,19 +254,19 @@ function SantaFe3770() {
                     <div className="pricing-cards">
                       <PriceCard 
                         title="Por Mes"
-                        amount="USD 1200"
+                        amount={property?.prices?.monthly || "USD 1300"}
                         details="No incluye servicios y limpieza semanal"
                         whatsappMessage="Me interesa el departamento en Santa Fe 3770 para alquiler mensual"
                       />
                       <PriceCard 
                         title="Por Semana"
-                        amount="USD 400"
+                        amount={property?.prices?.weekly || "USD 420"}
                         details="No incluye una limpieza"
                         whatsappMessage="Me interesa el departamento en Santa Fe 3770 para alquiler semanal"
                       />
                       <PriceCard 
                         title="Por Día"
-                        amount="USD 70"
+                        amount={property?.prices?.daily || "USD 75"}
                         details="Mínimo 3 noches"
                         whatsappMessage="Me interesa el departamento en Santa Fe 3770 para alquiler diario"
                       />
@@ -194,17 +281,17 @@ function SantaFe3770() {
                     <div className="description">
                       <p lang="es">
                         <strong>En Español:</strong><br />
-                        Exclusivo departamento de lujo en Palermo Botánico. Ubicación privilegiada con excelente conectividad. Amenities premium: piscina olímpica, gimnasio equipado, jardín zen, parrilla y área de juegos. WiFi de alta velocidad en todo el edificio. Seguridad 24/7 y protocolos sanitarios vigentes. Ideal para estadías ejecutivas o turísticas.
+                        {property?.description?.es || "Moderno departamento de un ambiente en el corazón de Palermo con todas las comodidades necesarias."}
                       </p>
                       <hr />
                       <p lang="en">
                         <strong>In English:</strong><br />
-                        Luxury studio in Palermo Botánico. Prime location with excellent connectivity. Premium amenities: Olympic pool, fully equipped gym, zen garden, BBQ area, and games room. High-speed WiFi throughout the building. 24/7 security and up-to-date health protocols. Perfect for business or tourist stays.
+                        {property?.description?.en || "Modern one-bedroom apartment in the heart of Palermo with all necessary amenities."}
                       </p>
                       <hr />
                       <p lang="pt">
                         <strong>Em Português:</strong><br />
-                        Apartamento de luxo no Palermo Botánico. Localização privilegiada com excelente conectividade. Comodidades premium: piscina olímpica, academia equipada, jardim zen, churrasqueira e área de jogos. WiFi de alta velocidade em todo o prédio. Segurança 24/7 e protocolos sanitários atualizados. Ideal para estadias executivas ou turísticas.
+                        {property?.description?.pt || "Apartamento moderno de um ambiente no coração de Palermo com todas as comodidades necessárias."}
                       </p>
                     </div>
                   </div>
@@ -214,38 +301,74 @@ function SantaFe3770() {
                     <h3 className="h5 mb-3 text-center"><i className="fas fa-star"></i> Amenities Premium</h3>
                     <div className="row">
                       <div className="col-md-4">
-                        <h4 className="h6 mb-3"><i className="fas fa-tv"></i> Entretenimiento</h4>
-                        <ul className="list-unstyled">
-                          <li><i className="fas fa-tv"></i> Smart TV 49"</li>
-                          <li><i className="fas fa-wifi"></i> WiFi 300MB Fibra Óptica</li>
-                          <li><i className="fas fa-snowflake"></i> Aire Acondicionado Split</li>
-                        </ul>
-                      </div>
-                      <div className="col-md-4">
-                        <h4 className="h6 mb-3"><i className="fas fa-swimming-pool"></i> Edificio</h4>
-                        <ul className="list-unstyled">
-                          <li><i className="fas fa-swimming-pool"></i> Piscina Olímpica</li>
-                          <li><i className="fas fa-dumbbell"></i> Gimnasio Equipado</li>
-                          <li><i className="fas fa-tree"></i> Jardín Zen</li>
-                          <li><i className="fas fa-shield-alt"></i> Seguridad 24hs</li>
-                        </ul>
-                      </div>
-                      <div className="col-md-4">
                         <h4 className="h6 mb-3"><i className="fas fa-home"></i> Departamento</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-bed"></i> Cama Queen Size</li>
-                          <li><i className="fas fa-bath"></i> Baño Completo</li>
-                          <li><i className="fas fa-utensils"></i> Cocina Full Equipped</li>
-                          <li><i className="fas fa-tshirt"></i> Laundry</li>
+                          {property?.amenities?.departamento?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-tv"></i> Smart TV 49"</li>
+                              <li><i className="fas fa-wifi"></i> WiFi 300MB Fibra Óptica</li>
+                              <li><i className="fas fa-snowflake"></i> Aire Acondicionado Split</li>
+                              <li><i className="fas fa-bed"></i> Cama Queen Size</li>
+                              <li><i className="fas fa-bath"></i> Baño Completo</li>
+                              <li><i className="fas fa-utensils"></i> Cocina Full Equipped</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                      <div className="col-md-4">
+                        <h4 className="h6 mb-3"><i className="fas fa-plus-circle"></i> Servicios</h4>
+                        <ul className="list-unstyled">
+                          {property?.amenities?.servicios?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-shield-alt"></i> Seguridad 24hs</li>
+                              <li><i className="fas fa-tshirt"></i> Laundry</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                      <div className="col-md-4">
+                        <h4 className="h6 mb-3"><i className="fas fa-spa"></i> Amenities</h4>
+                        <ul className="list-unstyled">
+                          {property?.amenities?.amenitiesEdificio?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-swimming-pool"></i> Piscina Olímpica</li>
+                              <li><i className="fas fa-dumbbell"></i> Gimnasio Equipado</li>
+                              <li><i className="fas fa-tree"></i> Jardín Zen</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                     </div>
                   </div>
 
                   <section className="gallery-section">
-                    <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button 
+                          onClick={loadPropertiesFromBackend}
+                          className="btn btn-sm btn-outline-success"
+                          title="Actualizar precios desde admin"
+                        >
+                          <i className="fas fa-dollar-sign"></i> Actualizar Precios
+                        </button>
+                        <button 
+                          onClick={refreshGallery}
+                          className="btn btn-sm btn-outline-primary"
+                          title="Actualizar galería"
+                        >
+                          <i className="fas fa-sync-alt"></i> Actualizar Galería
+                        </button>
+                      </div>
+                    </div>
                     <div className="gallery-container">
-                      {galleryImages.map((img, index) => (
+                      {processedImages.map((img, index) => (
                         <div key={index} className="gallery-item" onClick={() => openGallery(index)}>
                           <img src={img} alt={`Departamento Santa Fe 3770 - ${index + 1}`} loading="lazy" />
                         </div>
@@ -322,12 +445,14 @@ function SantaFe3770() {
               </div>
             </div>
 
-          
           </main>
+
+          {/* Sección de Reseñas */}
+          <ReviewsSection propertyId="santafe3770" />
           
           {showGallery && (
             <Gallery 
-              images={galleryImages}
+              images={processedImages}
               currentIndex={selectedImage}
               onClose={() => setShowGallery(false)}
             />

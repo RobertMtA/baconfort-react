@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
-import { FaCode, FaHome, FaWhatsapp, FaEnvelope, FaCalendarAlt } from 'react-icons/fa';
+import { FaCode, FaHome, FaWhatsapp, FaEnvelope, FaCalendarAlt, FaShieldAlt } from 'react-icons/fa';
 import ReservationForm from '../ReservationForm/ReservationForm';
 
 const Footer = () => {
@@ -68,9 +69,14 @@ const Footer = () => {
       <p className="credit">
         <FaCode /> Desarrollador | Roberto Gaona
       </p>
-      <a href="/" className="btn-volver">
-        <FaHome /> Volver
-      </a>
+      <div className="footer-actions">
+        <a href="/" className="btn-volver">
+          <FaHome /> Volver
+        </a>
+        <Link to="/admin" className="btn-admin" title="Panel de Administración">
+          <FaShieldAlt />
+        </Link>
+      </div>
     </footer>
   );
 };

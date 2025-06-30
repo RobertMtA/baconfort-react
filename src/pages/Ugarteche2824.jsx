@@ -3,51 +3,91 @@ import { Link } from 'react-router-dom';
 import PriceCard from "../components/PriceCard/PriceCard";
 import Gallery from '../components/Gallery/Gallery';
 import ReservationForm from '../components/ReservationForm/ReservationForm';
+import ReviewsSection from '../components/ReviewsSection/ReviewsSection';
 import Loading from '../components/Loading/Loading';
+import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
+import { useNavbar } from '../hooks/useNavbar';
+import { useGallery } from '../hooks/useGallery';
+import { useAdmin } from '../context/AdminContext';
+import { useProperty } from '../hooks/useProperty';
+import ImageUtils from '../utils/ImageUtils';
 import NotFound from './NotFound';
 
 import '../styles/departamento.css';
 
-// Define images array outside the component
-const galleryImages = [
-  '/img/img-ugarteche1.jpg',
-  '/img/img-ugarteche2.jpg',
-  '/img/img-ugarteche3.jpg',
-  '/img/img-ugarteche4.jpg',
-  '/img/img-ugarteche5.jpg',
-  '/img/img-ugarteche6.jpg',
-  '/img/img-ugarteche7.jpg',
-  '/img/img-ugarteche8.jpg',
-  '/img/img-ugarteche9.jpg'
-];
+
 
 function Ugarteche2824() {
   const [showGallery, setShowGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { navbarOpen, toggleNavbar, closeNavbar } = useNavbar();
+  
+  // Usar useProperty para obtener datos de la propiedad del backend
+  const { 
+    property, 
+    loading: propertyLoading, 
+    error: propertyError 
+  } = useProperty('ugarteche2824');
+  
+  // Cargar galería desde la base de datos
+  const { 
+    images: galleryImages, 
+    loading: galleryLoading, 
+    error: galleryError, 
+    mainImage,
+    refreshGallery 
+  } = useGallery('ugarteche2824');
+  
+  // Los precios ahora vienen directamente del backend a través de useProperty
+  console.log('🏠 Ugarteche2824 - Property from backend:', property);
+  
+  // Usar imágenes de la base de datos o fallback a imágenes estáticas
+  const images = galleryImages.length > 0 ? galleryImages : [
+    '/img/img-ugarteche1.jpg',
+    '/img/img-ugarteche2.jpg',
+    '/img/img-ugarteche3.jpg',
+    '/img/img-ugarteche4.jpg',
+    '/img/img-ugarteche5.jpg',
+    '/img/img-ugarteche6.jpg',
+    '/img/img-ugarteche7.jpg',
+    '/img/img-ugarteche8.jpg',
+    '/img/img-ugarteche9.jpg'
+  ];
+
+  // Procesar imágenes con ImageUtils
+  const processedImages = images.map(img => ImageUtils.getImageSrc(img));
 
   useEffect(() => {
+    // Simular carga de imágenes y esperar a que se cargue la galería y la propiedad
     const loadImages = async () => {
-      try {
-        const imagePromises = galleryImages.map(src => {
-          return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.src = src;
-            img.onload = resolve;
-            img.onerror = reject;
-          });
-        });
-
-        await Promise.all(imagePromises);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error loading images:', error);
-        setIsLoading(false);
+      // Esperar a que la galería y la propiedad terminen de cargar
+      if (galleryLoading || propertyLoading) {
+        return;
       }
+
+      const images = document.querySelectorAll('img');
+      const promises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+        });
+      });
+
+      await Promise.all(promises);
+      setIsLoading(false);
     };
 
     loadImages();
-  }, []);
+  }, [galleryLoading, propertyLoading]); // Dependencia del estado de carga de la galería y la propiedad
+
+  useEffect(() => {
+    // Log para debugging - mostrar datos de la propiedad cuando cambien
+    console.log('🔄 Ugarteche2824 - Property or gallery updated:', { property, galleryImages });
+  }, [property, galleryImages]);
+
+  // useEffect adicional removido ya que useProperty maneja la carga automáticamente
 
   const openGallery = (index) => {
     setSelectedImage(index);
@@ -79,27 +119,44 @@ function Ugarteche2824() {
               <button 
                 className="navbar-toggler" 
                 type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
+                onClick={toggleNavbar}
                 aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation"
+                aria-expanded={navbarOpen} 
+                aria-label="Abrir menú de navegación"
               >
                 <span className="navbar-toggler-icon"></span>
               </button>
-              <div className="collapse navbar-collapse" id="navbarNav">
+              <div className={`navbar-collapse ${navbarOpen ? 'show' : 'collapse'}`} id="navbarNav">
                 <ul className="navbar-nav ms-auto">
                   <li className="nav-item">
-                    <a className="nav-link" href="/"><i className="fas fa-home nav-icon"></i> Inicio</a>
+                    <a className="nav-link" href="/" onClick={closeNavbar} aria-label="Ir al inicio">
+                      <i className="fas fa-home nav-icon" aria-hidden="true"></i> 
+                      Inicio
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#servicios"><i className="fas fa-list nav-icon"></i> Detalles</a>
+                    <a className="nav-link" href="#servicios" onClick={closeNavbar} aria-label="Ver detalles de la propiedad">
+                      <i className="fas fa-list nav-icon" aria-hidden="true"></i> 
+                      Detalles
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#ubicacion"><i className="fas fa-map-marker-alt nav-icon"></i> Ubicación</a>
+                    <a className="nav-link" href="#ubicacion" onClick={closeNavbar} aria-label="Ver ubicación en el mapa">
+                      <i className="fas fa-map-marker-alt nav-icon" aria-hidden="true"></i> 
+                      Ubicación
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#precio-de-alquiler"><i className="fas fa-tag nav-icon"></i> Precio</a>
+                    <a className="nav-link" href="#reseñas" onClick={closeNavbar} aria-label="Ver reseñas de huéspedes">
+                      <i className="fas fa-star nav-icon" aria-hidden="true"></i> 
+                      Reseñas
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="#precio-de-alquiler" onClick={closeNavbar} aria-label="Ver precios de alquiler">
+                      <i className="fas fa-tag nav-icon" aria-hidden="true"></i> 
+                      Precio
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -108,18 +165,16 @@ function Ugarteche2824() {
     
       {/* Sección Hero con Video */}
       <div className="video-hero">
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          preload="metadata"
+        <VideoPlayer
+          src={ImageUtils.getVideoSrc(property?.heroVideo) || "/video/video-portada-ugarteche-2824.mp4"}
+          poster={ImageUtils.getImageSrc(mainImage || property?.coverImage || "/img/img-ugarteche3.jpg")}
+          title={property?.title || "Departamento Ugarteche 2824"}
+          autoPlay={true}
+          muted={true}
+          loop={true}
+          controls={false}
           className="hero-video"
-          poster="img/img-ugarteche3.jpg"
-        >
-          <source src="video/video-portada-ugarteche-2824.mp4" type="video/mp4" />
-          <img src="img/img-ugarteche6.jpg" alt="Departamento Ugarteche 2824" />
-        </video>
+        />
         <div className="video-overlay"></div>
         <div className="video-content">
         
@@ -153,24 +208,25 @@ function Ugarteche2824() {
                   </div>
                 </div>
               </div>
+
               <div id="precio-de-alquiler" className="pricing-container">
                 <h2 className="pricing-title"><i className="fas fa-dollar-sign"></i> Valor del Alquiler</h2>
                 <div className="pricing-cards">
                   <PriceCard 
                     title="Por Mes"
-                    amount="USD 700"
+                    amount={property?.prices?.monthly || "1250"}
                     details="No incluye servicios y limpieza semanal"
                     whatsappMessage="Me interesa el departamento en Ugarteche 2824 para alquiler mensual"
                   />
                   <PriceCard 
                     title="Por Semana"
-                    amount="USD 400"
+                    amount={property?.prices?.weekly || "410"}
                     details="No incluye una limpieza"
                     whatsappMessage="Me interesa el departamento en Ugarteche 2824 para alquiler semanal"
                   />
                   <PriceCard 
                     title="Por Día"
-                    amount="USD 60"
+                    amount={property?.prices?.daily || "72"}
                     details="Mínimo 3 noches"
                     whatsappMessage="Me interesa el departamento en Ugarteche 2824 para alquiler diario"
                   />
@@ -185,17 +241,17 @@ function Ugarteche2824() {
                 <div className="description">
                   <p lang="es">
                     <strong>En Español:</strong><br />
-                    Exclusivo PH tipo casa totalmente reciclado a nuevo en un edificio centenario de gran categoría. Entrada independiente en una de las mejores zonas de Palermo, a solo metros del Jardín Botánico de Buenos Aires. Completamente equipado para 2 o 3 huéspedes. Diseño moderno que conserva el encanto histórico del edificio.
+                    {property?.description?.es || "Departamento de lujo en Palermo Botánico con vistas espectaculares."}
                   </p>
                   <hr />
                   <p lang="en">
                     <strong>In English:</strong><br />
-                    Exclusive house-style PH completely renovated in a high-class centennial building. Independent entrance in one of the best areas of Palermo, just meters from the Buenos Aires Botanical Garden. Fully equipped for 2 or 3 guests. Modern design that preserves the building's historical charm.
+                    {property?.description?.en || "Luxury apartment in Palermo Botánico with spectacular views."}
                   </p>
                   <hr />
                   <p lang="pt">
                     <strong>Em Português:</strong><br />
-                    PH exclusivo tipo casa totalmente renovado em um edifício centenário de alto padrão. Entrada independente em uma das melhores áreas de Palermo, a poucos metros do Jardim Botânico de Buenos Aires. Totalmente equipado para 2 ou 3 hóspedes. Design moderno que preserva o charme histórico do edifício.
+                    {property?.description?.pt || "Apartamento de luxo em Palermo Botânico com vistas espetaculares."}
                   </p>
                 </div>
               </div>
@@ -205,37 +261,82 @@ function Ugarteche2824() {
                 <h3 className="h5 mb-3 text-center"><i className="fas fa-star"></i> Comodidades Destacadas</h3>
                 <div className="row">
                   <div className="col-md-4">
-                    <h4 className="h6 mb-3"><i className="fas fa-tv"></i> Entretenimiento</h4>
+                    <h4 className="h6 mb-3"><i className="fas fa-home"></i> Departamento</h4>
                     <ul className="list-unstyled">
-                      <li><i className="fas fa-tv"></i> Smart TV 55"</li>
-                      <li><i className="fas fa-wifi"></i> WiFi 300MB Fibra Óptica</li>
-                      <li><i className="fas fa-snowflake"></i> Aire Acondicionado F/C</li>
-                      <li><i className="fas fa-couch"></i> Living espacioso</li>
+                      {property?.amenities?.departamento?.map((amenity, index) => (
+                        <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                      )) || (
+                        <>
+                          <li><i className="fas fa-tv"></i> Smart TV 55"</li>
+                          <li><i className="fas fa-wifi"></i> WiFi 300MB Fibra Óptica</li>
+                          <li><i className="fas fa-snowflake"></i> Aire Acondicionado F/C</li>
+                          <li><i className="fas fa-couch"></i> Living espacioso</li>
+                          <li><i className="fas fa-door-closed"></i> Entrada independiente</li>
+                          <li><i className="fas fa-bed"></i> Cama Queen Size</li>
+                        </>
+                      )}
                     </ul>
                   </div>
                   <div className="col-md-4">
-                    <h4 className="h6 mb-3"><i className="fas fa-home"></i> Características</h4>
+                    <h4 className="h6 mb-3"><i className="fas fa-plus-circle"></i> Servicios</h4>
                     <ul className="list-unstyled">
-                      <li><i className="fas fa-door-closed"></i> Entrada independiente</li>
-                      <li><i className="fas fa-warehouse"></i> Amplios Placards</li>
-                      <li><i className="fas fa-bath"></i> Baño con ducha</li>
-                      <li><i className="fas fa-bed"></i> Cama Queen Size</li>
+                      {property?.amenities?.servicios?.map((amenity, index) => (
+                        <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                      )) || (
+                        <>
+                          <li><i className="fas fa-warehouse"></i> Amplios Placards</li>
+                          <li><i className="fas fa-bath"></i> Baño con ducha</li>
+                          <li><i className="fas fa-coffee"></i> Cafetera</li>
+                          <li><i className="fas fa-utensils"></i> Vajilla completa</li>
+                        </>
+                      )}
                     </ul>
                   </div>
                   <div className="col-md-4">
-                    <h4 className="h6 mb-3"><i className="fas fa-utensils"></i> Cocina</h4>
+                    <h4 className="h6 mb-3"><i className="fas fa-spa"></i> Amenities</h4>
                     <ul className="list-unstyled">
-                      <li><i className="fas fa-coffee"></i> Cafetera</li>
-                      <li><i className="fas fa-blender"></i> Microondas</li>
-                      <li><i className="fas fa-utensils"></i> Vajilla completa</li>
-                      <li><i className="fas fa-wine-glass"></i> Cristalería</li>
+                      {property?.amenities?.amenitiesEdificio?.map((amenity, index) => (
+                        <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                      )) || (
+                        <>
+                          <li><i className="fas fa-dumbbell"></i> Gimnasio</li>
+                          <li><i className="fas fa-swimming-pool"></i> Piscina</li>
+                          <li><i className="fas fa-shield-alt"></i> Seguridad 24hs</li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 </div>
               </div>
 
               <section className="gallery-section">
-                <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {/* Debug visual */}
+                    <div style={{ 
+                      padding: '5px 10px', 
+                      fontSize: '12px', 
+                      borderRadius: '4px',
+                      backgroundColor: galleryImages.length > 0 ? '#d4edda' : '#f8d7da',
+                      color: galleryImages.length > 0 ? '#155724' : '#721c24',
+                      border: '1px solid ' + (galleryImages.length > 0 ? '#c3e6cb' : '#f5c6cb')
+                    }}>
+                      DB: {galleryImages.length} | Total: {images.length}
+                      {galleryLoading ? ' (Cargando...)' : ''}
+                      {galleryError ? ' (Error)' : ''}
+                      {!galleryLoading && galleryImages.length > 0 ? ' ✅' : ''}
+                      {!galleryLoading && galleryImages.length === 0 ? ' (Usando fallback)' : ''}
+                    </div>
+                    <button 
+                      onClick={refreshGallery}
+                      className="btn btn-sm btn-outline-primary"
+                      title="Actualizar galería"
+                    >
+                      <i className="fas fa-sync-alt"></i> Actualizar Galería
+                    </button>
+                  </div>
+                </div>
                 <div className="gallery-container">
                   {galleryImages.map((img, index) => (
                     <div key={index} className="gallery-item" onClick={() => openGallery(index)}>
@@ -295,6 +396,13 @@ function Ugarteche2824() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Sección de Reseñas */}
+        <section id="reseñas" className="py-5">
+          <div className="container">
+            <ReviewsSection propertyId="ugarteche2824" />
           </div>
         </section>
 

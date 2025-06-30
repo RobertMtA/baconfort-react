@@ -3,36 +3,97 @@ import { Link } from 'react-router-dom';
 import PriceCard from "../components/PriceCard/PriceCard";
 import Gallery from '../components/Gallery/Gallery';
 import ReservationForm from '../components/ReservationForm/ReservationForm';
+import ReviewsSection from '../components/ReviewsSection/ReviewsSection';
 import Loading from '../components/Loading/Loading';
+import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
+import { useNavbar } from '../hooks/useNavbar';
+import { useGallery } from '../hooks/useGallery';
+import { useAdmin } from '../context/AdminContext';
+import { useProperty } from '../hooks/useProperty';
+import ImageUtils from '../utils/ImageUtils';
 import '../styles/departamento.css';
 import NotFound from './NotFound';
 
-// Move images array outside component
-const galleryImages = [
-  '/img/img-dorrego1.jpg',
-  '/img/img-dorrego2.jpg',
-  '/img/img-dorrego3.jpg',
-  '/img/img-dorrego4.jpg',
-  '/img/img-dorrego5.jpg',
-  '/img/img-dorrego6.jpg',
-  '/img/img-dorrego7.jpg',
-  '/img/img-dorrego8.jpg',
-  '/img/img-dorrego9.jpg',
-  '/img/img-dorrego10.jpg',
-  '/img/img-dorrego11.jpg',
-  '/img/img-dorrego12.jpg',
-  '/img/img-dorrego13.jpg',
-  '/img/img-dorrego14.jpg',
-  '/img/img-dorrego15.jpg',
-  '/img/img-dorrego16.jpg',
-  '/img/img-dorrego17.jpg',
-  '/img/img-dorrego18.jpg'
-];
+
 
 function Dorrego1548() {
   const [showGallery, setShowGallery] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { navbarOpen, toggleNavbar, closeNavbar } = useNavbar();
+  
+  // Usar useProperty para obtener datos de la propiedad del backend
+  const { 
+    property, 
+    loading: propertyLoading, 
+    error: propertyError 
+  } = useProperty('dorrego1548');
+  
+  // Cargar galería desde la base de datos
+  const { 
+    images: galleryImages, 
+    loading: galleryLoading, 
+    error: galleryError, 
+    mainImage,
+    refreshGallery 
+  } = useGallery('dorrego1548');
+  
+  // Los precios ahora vienen directamente del backend a través de useProperty
+  console.log('🏠 Dorrego1548 - Property from backend:', property);
+  
+  // Usar imágenes de la base de datos o fallback a imágenes estáticas
+  const images = galleryImages.length > 0 ? galleryImages : [
+    '/img/img-dorrego1.jpg',
+    '/img/img-dorrego2.jpg',
+    '/img/img-dorrego3.jpg',
+    '/img/img-dorrego4.jpg',
+    '/img/img-dorrego5.jpg',
+    '/img/img-dorrego6.jpg',
+    '/img/img-dorrego7.jpg',
+    '/img/img-dorrego8.jpg',
+    '/img/img-dorrego9.jpg',
+    '/img/img-dorrego10.jpg',
+    '/img/img-dorrego11.jpg',
+    '/img/img-dorrego12.jpg',
+    '/img/img-dorrego13.jpg',
+    '/img/img-dorrego14.jpg',
+    '/img/img-dorrego15.jpg',
+    '/img/img-dorrego16.jpg',
+    '/img/img-dorrego17.jpg',
+    '/img/img-dorrego18.jpg'
+  ];
+
+  // Procesar imágenes con ImageUtils
+  const processedImages = images.map(img => ImageUtils.getImageSrc(img));
+
+  useEffect(() => {
+    // Simular carga de imágenes y esperar a que se cargue la galería y la propiedad
+    const loadImages = async () => {
+      // Esperar a que la galería y la propiedad terminen de cargar
+      if (galleryLoading || propertyLoading) {
+        return;
+      }
+
+      const images = document.querySelectorAll('img');
+      const promises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve);
+          img.addEventListener('error', resolve);
+        });
+      });
+
+      await Promise.all(promises);
+      setIsLoading(false);
+    };
+
+    loadImages();
+  }, [galleryLoading, propertyLoading]); // Dependencia del estado de carga de la galería y la propiedad
+
+  useEffect(() => {
+    // Limpieza de efectos previos si es necesario
+    console.log('🔄 Dorrego1548 - Property or gallery updated:', { property, galleryImages });
+  }, [property, galleryImages]);
 
   const openGallery = (index) => {
     setSelectedImage(index);
@@ -87,27 +148,44 @@ function Dorrego1548() {
               <button 
                 className="navbar-toggler" 
                 type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
+                onClick={toggleNavbar}
                 aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation"
+                aria-expanded={navbarOpen} 
+                aria-label="Abrir menú de navegación"
               >
                 <span className="navbar-toggler-icon"></span>
               </button>
-              <div className="collapse navbar-collapse" id="navbarNav">
+              <div className={`navbar-collapse ${navbarOpen ? 'show' : 'collapse'}`} id="navbarNav">
                 <ul className="navbar-nav ms-auto">
                   <li className="nav-item">
-                    <a className="nav-link" href="/"><i className="fas fa-home nav-icon"></i> Inicio</a>
+                    <a className="nav-link" href="/" onClick={closeNavbar} aria-label="Ir al inicio">
+                      <i className="fas fa-home nav-icon" aria-hidden="true"></i> 
+                      Inicio
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#servicios"><i className="fas fa-list nav-icon"></i> Detalles</a>
+                    <a className="nav-link" href="#servicios" onClick={closeNavbar} aria-label="Ver detalles de la propiedad">
+                      <i className="fas fa-list nav-icon" aria-hidden="true"></i> 
+                      Detalles
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#ubicacion"><i className="fas fa-map-marker-alt nav-icon"></i> Ubicación</a>
+                    <a className="nav-link" href="#ubicacion" onClick={closeNavbar} aria-label="Ver ubicación en el mapa">
+                      <i className="fas fa-map-marker-alt nav-icon" aria-hidden="true"></i> 
+                      Ubicación
+                    </a>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="#precio-de-alquiler"><i className="fas fa-tag nav-icon"></i> Precio</a>
+                    <a className="nav-link" href="#reseñas" onClick={closeNavbar} aria-label="Ver reseñas de huéspedes">
+                      <i className="fas fa-star nav-icon" aria-hidden="true"></i> 
+                      Reseñas
+                    </a>
+                  </li>
+                  <li className="nav-item">
+                    <a className="nav-link" href="#precio-de-alquiler" onClick={closeNavbar} aria-label="Ver precios de alquiler">
+                      <i className="fas fa-tag nav-icon" aria-hidden="true"></i> 
+                      Precio
+                    </a>
                   </li>
                 </ul>
               </div>
@@ -116,18 +194,16 @@ function Dorrego1548() {
 
           {/* Sección Hero con Video */}
           <div className="video-hero">
-            <video 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              preload="metadata"
+            <VideoPlayer
+              src={ImageUtils.getVideoSrc(property?.heroVideo) || "/video/video-portada-dorrego-1548.mp4"}
+              poster={ImageUtils.getImageSrc(mainImage || property?.coverImage || "/img/img-dorrego11.jpg")}
+              title={property?.title || "Departamento Dorrego 1548"}
+              autoPlay={true}
+              muted={true}
+              loop={true}
+              controls={false}
               className="hero-video"
-              poster="img/img-dorrego11.jpg"
-            >
-              <source src="video/video-portada-dorrego-1548.mp4" type="video/mp4" />
-              <img src="img/img-dorrego2.jpg" alt="Departamento Dorrego 1548" />
-            </video>
+            />
             <div className="video-overlay"></div>
             <div className="video-content">
             
@@ -161,24 +237,25 @@ function Dorrego1548() {
                       </div>
                     </div>
                   </div>
+
                   <div id="precio-de-alquiler" className="pricing-container">
                     <h2 className="pricing-title"><i className="fas fa-dollar-sign"></i> Valor del Alquiler</h2>
                     <div className="pricing-cards">
                       <PriceCard 
                         title="Por Mes"
-                        amount="USD 1500"
+                        amount={property?.prices?.monthly || "1150"}
                         details="Incluye servicios y limpieza semanal"
                         whatsappMessage="Me interesa el departamento en Dorrego 1548 para alquiler mensual"
                       />
                       <PriceCard 
                         title="Por Semana"
-                        amount="USD 550"
+                        amount={property?.prices?.weekly || "380"}
                         details="Incluye una limpieza"
                         whatsappMessage="Me interesa el departamento en Dorrego 1548 para alquiler semanal"
                       />
                       <PriceCard 
                         title="Por Día"
-                        amount="USD 90"
+                        amount={property?.prices?.daily || "70"}
                         details="Mínimo 3 noches"
                         whatsappMessage="Me interesa el departamento en Dorrego 1548 para alquiler diario"
                       />
@@ -193,17 +270,17 @@ function Dorrego1548() {
                     <div className="description">
                       <p lang="es">
                         <strong>En Español:</strong><br />
-                        Este alojamiento elegante es ideal para viajes en grupo, ya sea con amigos o familiares. Es una casa con entrada independiente y mucho espacio en el corazón de Palermo, con un estilo vanguardista. Está cerca de estaciones de metro y autobús, en la mejor zona de Buenos Aires. Ideal para quienes aman el arte y la gastronomía.
+                        {property?.description?.es || "Departamento completo en Villa Crespo con excelente ubicación y conectividad."}
                       </p>
                       <hr />
                       <p lang="en">
                         <strong>In English:</strong><br />
-                        This elegant accommodation is ideal for group trips, whether with friends or family. It is a house with an independent entrance and plenty of space in the heart of Palermo, with an avant-garde style. It is close to metro and bus stations, in the best area of Buenos Aires. Ideal for those who love art and gastronomy.
+                        {property?.description?.en || "Complete apartment in Villa Crespo with excellent location and connectivity."}
                       </p>
                       <hr />
                       <p lang="pt">
                         <strong>Em Português:</strong><br />
-                        Esta acomodação elegante é ideal para viagens em grupo, seja com amigos ou familiares. É uma casa com entrada independente e muito espaço no coração de Palermo, com um estilo vanguardista. Fica perto de estações de metrô e ônibus, na melhor área de Buenos Aires. Ideal para quem ama arte e gastronomia.
+                        {property?.description?.pt || "Apartamento completo em Villa Crespo com excelente localização e conectividade."}
                       </p>
                     </div>
                   </div>
@@ -213,36 +290,65 @@ function Dorrego1548() {
                     <h3 className="h5 mb-3 text-center"><i className="fas fa-star"></i> Comodidades Destacadas</h3>
                     <div className="row">
                       <div className="col-md-4">
-                        <h4 className="h6 mb-3"><i className="fas fa-tv"></i> Entretenimiento</h4>
+                        <h4 className="h6 mb-3"><i className="fas fa-home"></i> Departamento</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-tv"></i> Smart TV 55"</li>
-                          <li><i className="fas fa-wifi"></i> WiFi 300MB</li>
-                          <li><i className="fas fa-snowflake"></i> Aire Acondicionado F/C & Caldera</li>
+                          {property?.amenities?.departamento?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-tv"></i> Smart TV 55"</li>
+                              <li><i className="fas fa-wifi"></i> WiFi 300MB</li>
+                              <li><i className="fas fa-snowflake"></i> Aire Acondicionado F/C & Caldera</li>
+                              <li><i className="fas fa-door-closed"></i> Jardín Trasero</li>
+                              <li><i className="fas fa-warehouse"></i> Habitaciones Amplias</li>
+                              <li><i className="fas fa-bath"></i> Baños en Suite</li>
+                              <li><i className="fas fa-utensils"></i> Cocina Integrada</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                       <div className="col-md-4">
-                        <h4 className="h6 mb-3"><i className="fas fa-home"></i> Comodidades</h4>
+                        <h4 className="h6 mb-3"><i className="fas fa-plus-circle"></i> Servicios</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-door-closed"></i> Jardín Trasero</li>
-                          <li><i className="fas fa-warehouse"></i> Habitaciones Amplias</li>
-                          <li><i className="fas fa-bath"></i> Baños en Suite, Vestidores, Baño de Servicio</li>
-                          <li><i className="fas fa-laptop"></i> Zona de Trabajo Equipada</li>
-                          <li><i className="fas fa-utensils"></i> Cocina Integrada con Lavavajillas</li>
+                          {property?.amenities?.servicios?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-bicycle"></i> Guarda bicicletas</li>
+                              <li><i className="fas fa-tshirt"></i> Lavadero Completo</li>
+                              <li><i className="fas fa-elevator"></i> Entrada Independiente</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                       <div className="col-md-4">
-                        <h4 className="h6 mb-3"><i className="fas fa-concierge-bell"></i> Servicios</h4>
+                        <h4 className="h6 mb-3"><i className="fas fa-spa"></i> Amenities</h4>
                         <ul className="list-unstyled">
-                          <li><i className="fas fa-bicycle"></i> Guarda bicicletas</li>
-                          <li><i className="fas fa-tshirt"></i> Lavadero Completo</li>
-                          <li><i className="fas fa-elevator"></i> Entrada Independiente</li>
+                          {property?.amenities?.amenitiesEdificio?.map((amenity, index) => (
+                            <li key={index}><i className={amenity.icon}></i> {amenity.text}</li>
+                          )) || (
+                            <>
+                              <li><i className="fas fa-dumbbell"></i> Gimnasio</li>
+                              <li><i className="fas fa-swimming-pool"></i> Piscina</li>
+                              <li><i className="fas fa-shield-alt"></i> Seguridad 24hs</li>
+                            </>
+                          )}
                         </ul>
                       </div>
                     </div>
                   </div>
 
                   <section className="gallery-section">
-                    <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                      <h2><i className="fas fa-images"></i> Galería de Imágenes</h2>
+                      <button 
+                        onClick={refreshGallery}
+                        className="btn btn-sm btn-outline-primary"
+                        title="Actualizar galería"
+                      >
+                        <i className="fas fa-sync-alt"></i> Actualizar
+                      </button>
+                    </div>
                     <div className="gallery-container">
                       {galleryImages.map((img, index) => (
                         <div key={index} className="gallery-item" onClick={() => openGallery(index)}>
@@ -301,6 +407,13 @@ function Dorrego1548() {
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Sección de Reseñas */}
+          <section id="reseñas" className="py-5">
+            <div className="container">
+              <ReviewsSection propertyId="dorrego1548" />
             </div>
           </section>
 
