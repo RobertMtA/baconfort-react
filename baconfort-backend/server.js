@@ -16,6 +16,7 @@ console.log('🌍 Environment:', process.env.NODE_ENV || 'development');
 app.use(cors({
   origin: [
     'http://localhost:3000',
+    'http://localhost:5173',
     'https://baconfort.netlify.app',
     process.env.FRONTEND_URL
   ].filter(Boolean),
@@ -53,7 +54,8 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     message: 'BACONFORT API is running',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
@@ -62,7 +64,7 @@ app.get('/api', (req, res) => {
   res.json({
     message: 'BACONFORT API',
     version: '1.0.0',
-    endpoints: ['/api/health', '/api/test']
+    endpoints: ['/api/health', '/api/test', '/api/auth/login', '/api/properties', '/api/reviews']
   });
 });
 

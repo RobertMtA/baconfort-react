@@ -4,8 +4,8 @@
 
 BACONFORT es una aplicación web completa para la gestión de departamentos temporarios que incluye:
 
-- **Frontend**: React + Vite (para deploy en Netlify)
-- **Backend**: Node.js + Express + MongoDB (para deploy en Render)
+- **Frontend**: React + Vite (deploy en Netlify u otra plataforma)
+- **Backend**: Node.js + Express + MongoDB (deploy universal)
 - **Base de datos**: MongoDB Atlas
 - **Características**: Sistema de propiedades, galería, reseñas con moderación, panel de administración
 
@@ -14,11 +14,11 @@ BACONFORT es una aplicación web completa para la gestión de departamentos temp
 ### Cuentas necesarias:
 - [ ] GitHub (código fuente)
 - [ ] MongoDB Atlas (base de datos)
-- [ ] Netlify (frontend hosting)
-- [ ] Render (backend hosting)
-- [ ] Cloudinary (gestión de imágenes)
+- [ ] Netlify/Vercel (frontend hosting)
+- [ ] Railway/Fly.io/Vercel (backend hosting)
+- [ ] Cloudinary (gestión de imágenes - opcional)
 
-## 🔧 Configuración del Backend (Render)
+## 🔧 Configuración del Backend
 
 ### 1. Preparar el repositorio
 ```bash
