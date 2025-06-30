@@ -1,20 +1,51 @@
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-console.log('🚀 BACONFORT Minimal Server Starting...');
+console.log('🚀 BACONFORT Server Starting...');
 console.log('📊 Port:', PORT);
+console.log('🌍 Environment:', process.env.NODE_ENV || 'development');
 
-// CORS - Very simple
+// CORS configuration
 app.use(cors({
-  origin: '*',
-  credentials: true
+  origin: [
+    'http://localhost:3000',
+    'https://baconfort.netlify.app',
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Basic middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Database connection
+const connectDB = async () => {
+  try {
+    if (!process.env.MONGODB_URI) {
+      console.log('⚠️ No MONGODB_URI provided, using demo mode');
+      return;
+    }
+    
+    console.log('🔄 Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    console.log('🔄 Running in demo mode without database');
+  }
+};
+
+connectDB();
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -39,6 +70,80 @@ app.get('/api', (req, res) => {
 app.get('/api/test', (req, res) => {
   res.json({
     message: 'Test endpoint working',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Demo authentication endpoints
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  console.log('🔐 Login attempt:', email);
+  
+  // Demo admin credentials
+  if (email === 'admin@baconfort.com' && password === 'admin123') {
+    const token = jwt.sign(
+      { userId: 'demo-admin', role: 'admin' },
+      process.env.JWT_SECRET || 'demo-secret',
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      message: 'Login exitoso',
+      token,
+      user: {
+        id: 'demo-admin',
+        email: 'admin@baconfort.com',
+        role: 'admin',
+        name: 'Demo Admin'
+      }
+    });
+  } else {
+    res.status(401).json({
+      error: 'Credenciales inválidas'
+    });
+  }
+});
+
+app.post('/api/auth/register', (req, res) => {
+  res.json({
+    message: 'Registro disponible próximamente',
+    demo: true
+  });
+});
+
+app.get('/api/auth/verify', (req, res) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'demo-secret');
+    res.json({
+      valid: true,
+      user: decoded
+    });
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Basic properties endpoint
+app.get('/api/properties', (req, res) => {
+  res.json({
+    message: 'Properties endpoint',
+    data: [],
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Basic reviews endpoint  
+app.get('/api/reviews', (req, res) => {
+  res.json({
+    message: 'Reviews endpoint',
+    data: [],
     timestamp: new Date().toISOString()
   });
 });
