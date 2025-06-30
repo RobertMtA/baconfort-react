@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Configuración API</title>
+</head>
+<body>
+    <h1>Test de Configuración de API</h1>
+    <div id="results"></div>
+
+    <script>
+        // Simular la configuración de Vite para verificar la URL
+        const API_URL = 'https://baconfort-react-2.onrender.com';
+        
+        document.getElementById('results').innerHTML = `
+            <h2>Configuración Actual:</h2>
+            <p><strong>API_URL:</strong> ${API_URL}</p>
+            <p><strong>Test URL:</strong> ${API_URL}/api/health</p>
+            
+            <h3>Probando conexión...</h3>
+            <div id="test-result">Cargando...</div>
+        `;
+
+        // Test de conexión
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                const data = await response.json();
+                
+                document.getElementById('test-result').innerHTML = `
+                    <div style="color: green;">
+                        ✅ <strong>Conexión exitosa!</strong><br>
+                        Status: ${response.status}<br>
+                        Response: ${JSON.stringify(data, null, 2)}
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('test-result').innerHTML = `
+                    <div style="color: red;">
+                        ❌ <strong>Error de conexión:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        testConnection();
+    </script>
+</body>
+</html>
