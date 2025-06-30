@@ -7,7 +7,7 @@ const https = require('https');
 const http = require('http');
 
 // URLs por defecto (actualizar con las reales)
-const BACKEND_URL = process.argv[2] || 'https://tu-backend.onrender.com';
+const BACKEND_URL = process.argv[2] || 'https://tu-backend.herokuapp.com';
 const FRONTEND_URL = 'https://baconfort.netlify.app';
 
 console.log('🔍 BACONFORT - Verificación de Conexión\n');
@@ -135,7 +135,7 @@ async function main() {
     console.log('\n⚠️  HAY PROBLEMAS QUE RESOLVER');
     console.log('\n📋 Revisa:');
     if (!backendOK) {
-      console.log('   - Backend en Render funcionando');
+      console.log('   - Backend funcionando correctamente');
       console.log('   - Variables de entorno configuradas');
     }
     if (!frontendOK) {
@@ -144,7 +144,7 @@ async function main() {
     }
   }
   
-  console.log('\n💡 Uso: node verify-connection.js https://tu-backend.onrender.com');
+  console.log('\n💡 Uso: node verify-connection.js https://tu-backend.herokuapp.com');
 }
 
 // Ejecutar si es llamado directamente

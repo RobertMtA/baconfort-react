@@ -9,7 +9,7 @@ const https = require('https');
 const http = require('http');
 
 // URLs a probar (actualizar después del deploy)
-const BACKEND_URL = 'https://tu-backend.onrender.com';
+const BACKEND_URL = 'https://tu-backend.herokuapp.com';
 const FRONTEND_URL = 'https://tu-sitio.netlify.app';
 
 console.log('🧪 BACONFORT Post-Deploy Testing\n');
