@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Autenticación BACONFORT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test de Autenticación BACONFORT</h1>
+        
+        <div class="test-section">
+            <h3>🔑 Test de Login Admin</h3>
+            <button onclick="testAdminLogin()">Login Admin (admin@baconfort.com / roccosa226)</button>
+            <div id="adminResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>👤 Test de Login Usuario</h3>
+            <button onclick="testUserLogin()">Login Usuario (guest@baconfort.com / guest123)</button>
+            <div id="userResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🛡️ Test de Protección Admin</h3>
+            <button onclick="testAdminProtection()">Acceso a Gestión de Usuarios</button>
+            <div id="protectionResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Test de Estado Actual</h3>
+            <button onclick="getCurrentStatus()">Ver Estado de Autenticación</button>
+            <div id="statusResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        let currentToken = localStorage.getItem('token') || null;
+
+        async function testAdminLogin() {
+            const resultDiv = document.getElementById('adminResult');
+            resultDiv.innerHTML = '⏳ Probando login admin...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@baconfort.com',
+                        password: 'roccosa226'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    localStorage.setItem('token', data.token);
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Login exitoso<br>
+                        👤 Usuario: ${data.user.name}<br>
+                        📧 Email: ${data.user.email}<br>
+                        🔑 Rol: ${data.user.role}<br>
+                        🔗 Token guardado`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Error: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de conexión: ${error.message}`;
+            }
+        }
+
+        async function testUserLogin() {
+            const resultDiv = document.getElementById('userResult');
+            resultDiv.innerHTML = '⏳ Probando login usuario...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'guest@baconfort.com',
+                        password: 'guest123'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentToken = data.token;
+                    localStorage.setItem('token', data.token);
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Login exitoso<br>
+                        👤 Usuario: ${data.user.name}<br>
+                        📧 Email: ${data.user.email}<br>
+                        🔑 Rol: ${data.user.role}<br>
+                        🔗 Token guardado`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Error: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de conexión: ${error.message}`;
+            }
+        }
+
+        async function testAdminProtection() {
+            const resultDiv = document.getElementById('protectionResult');
+            resultDiv.innerHTML = '⏳ Probando acceso a gestión de usuarios...';
+            
+            if (!currentToken) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ No hay token de autenticación. Haz login primero.';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Acceso autorizado<br>
+                        📊 Usuarios encontrados: ${data.length}<br>
+                        👥 Lista: ${data.map(u => `${u.name} (${u.role})`).join(', ')}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Acceso denegado: ${data.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de conexión: ${error.message}`;
+            }
+        }
+
+        async function getCurrentStatus() {
+            const resultDiv = document.getElementById('statusResult');
+            resultDiv.innerHTML = '⏳ Verificando estado...';
+            
+            if (!currentToken) {
+                resultDiv.className = 'result';
+                resultDiv.innerHTML = '🚫 No hay usuario logueado';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Usuario activo<br>
+                        👤 Nombre: ${data.name}<br>
+                        📧 Email: ${data.email}<br>
+                        🔑 Rol: ${data.role}<br>
+                        🆔 ID: ${data._id}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Token inválido: ${data.message}`;
+                    currentToken = null;
+                    localStorage.removeItem('token');
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error de conexión: ${error.message}`;
+            }
+        }
+
+        // Cargar estado al inicio
+        window.onload = function() {
+            if (currentToken) {
+                getCurrentStatus();
+            }
+        };
+    </script>
+</body>
+</html>
