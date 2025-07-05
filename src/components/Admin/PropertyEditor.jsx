@@ -7,7 +7,7 @@ import DatabaseGalleryManager from './DatabaseGalleryManager';
 import './PropertyEditor.css';
 
 function PropertyEditor({ propertyId, onBack }) {
-  const { getProperty, updateProperty } = useAdmin();
+  const { getProperty, updateProperty, loadPropertiesFromBackend } = useAdmin();
   const property = getProperty(propertyId);
   
   const [formData, setFormData] = useState({
@@ -75,27 +75,83 @@ function PropertyEditor({ propertyId, onBack }) {
 
   const handleSave = async () => {
     setIsSaving(true);
-    console.log('💾 PROPERTY EDITOR: Guardando propiedad:', propertyId);
-    console.log('💾 PROPERTY EDITOR: Datos a guardar:', formData);
-    console.log('🖼️ PROPERTY EDITOR: Imágenes de galería:', formData.galleryImages);
-    console.log('🗄️ PROPERTY EDITOR: Imágenes de BD:', databaseImages);
+    console.log('💾 GUARDANDO:', propertyId, formData);
+    
+    // Mapear ID frontend a backend (todos con guiones)
+    const idMap = {
+      'moldes-1680': 'moldes-1680',
+      'santa-fe-3770': 'santa-fe-3770', 
+      'dorrego-1548': 'dorrego-1548',
+      'convencion-1994': 'convencion-1994',
+      'ugarteche-2824': 'ugarteche-2824'
+    };
+    
+    const backendId = idMap[propertyId] || propertyId;
+    console.log('🔄 Mapeando ID:', propertyId, '→', backendId);
+    
+    // Preparar datos para el backend - convertir precios a números
+    const backendData = { ...formData };
+    
+    // Convertir precios de strings a números
+    if (backendData.prices) {
+      const convertPrice = (price) => {
+        if (typeof price === 'string') {
+          // Extraer solo números del string (ej: "USD 60" -> 60)
+          const numMatch = price.match(/\d+/);
+          return numMatch ? parseInt(numMatch[0]) : 0;
+        }
+        return typeof price === 'number' ? price : 0;
+      };
+      
+      backendData.prices = {
+        ...backendData.prices,
+        daily: convertPrice(backendData.prices.daily),
+        weekly: convertPrice(backendData.prices.weekly),
+        monthly: convertPrice(backendData.prices.monthly)
+      };
+    }
+    
+    console.log('🔄 Datos transformados para backend:', backendData);
     
     try {
-      // 1. Guardar en localStorage (sistema actual)
-      updateProperty(propertyId, formData);
+      // 1. Guardar directamente en el backend
+      const response = await fetch(`http://localhost:5000/api/properties/${backendId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ADMIN_DEMO_TOKEN'
+        },
+        body: JSON.stringify(backendData)
+      });
       
-      // 2. TODO: Aquí deberías sincronizar las imágenes de la base de datos
-      // Las imágenes reales están en DatabaseGalleryManager, no en formData.galleryImages
+      if (response.ok) {
+        // 2. Actualizar localStorage
+        await updateProperty(propertyId, formData);
+        
+        // 3. Forzar recarga de datos del backend
+        console.log('🔄 Forzando recarga desde backend...');
+        await loadPropertiesFromBackend();
+        
+        // 4. Refrescar datos del formulario
+        setSaveMessage('✓ Guardado exitoso - Datos sincronizados');
+        
+        // 5. Recarga completa después de un momento
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+        
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Error del servidor:', errorText);
+        throw new Error(`Error ${response.status}: ${errorText}`);
+      }
       
-      setSaveMessage('✓ Cambios guardados exitosamente');
-      console.log('✅ PROPERTY EDITOR: Guardado exitoso');
-      console.log('ℹ️ PROPERTY EDITOR: Las imágenes están gestionadas por DatabaseGalleryManager');
-      setTimeout(() => setSaveMessage(''), 3000);
     } catch (error) {
-      console.error('❌ PROPERTY EDITOR: Error al guardar:', error);
-      setSaveMessage('✗ Error al guardar los cambios');
-      setTimeout(() => setSaveMessage(''), 3000);
+      console.error('❌ Error completo:', error);
+      setSaveMessage(`✗ Error: ${error.message}`);
+      setTimeout(() => setSaveMessage(''), 5000);
     }
+    
     setIsSaving(false);
   };
 
@@ -147,6 +203,29 @@ function PropertyEditor({ propertyId, onBack }) {
               <>
                 <i className="fas fa-save"></i>
                 Guardar Cambios
+              </>
+            )}
+          </button>
+          <button 
+            className="btn btn-success ms-2"
+            onClick={async () => {
+              await handleSave();
+              setTimeout(() => {
+                onBack();
+              }, 1000); // Esperar 1 segundo después de guardar antes de volver
+            }}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i>
+                Guardando...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-save"></i>
+                <i className="fas fa-arrow-left ms-1"></i>
+                Guardar y Volver
               </>
             )}
           </button>

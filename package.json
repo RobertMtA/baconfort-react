@@ -4,16 +4,17 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "node --max-old-space-size=4096 node_modules/vite/bin/vite.js",
+    "dev": "node --max-old-space-size=4096 node_modules/vite/bin/vite.js",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
     "clean:cache": "npm cache clean --force",
     "clean:modules": "rimraf node_modules",
     "clean:lock": "rimraf package-lock.json",
     "clean:dist": "rimraf dist",
     "clean:install": "npm install --no-audit --no-fund --max-old-space-size=4096",
-    "clean": "npm run clean:cache && npm run clean:modules && npm run clean:lock && npm run clean:dist && npm run clean:install",
-    "dev": "node --max-old-space-size=4096 node_modules/vite/bin/vite.js",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "clean": "npm run clean:cache && npm run clean:modules && npm run clean:lock && npm run clean:dist && npm run clean:install"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",

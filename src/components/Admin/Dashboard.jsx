@@ -50,11 +50,11 @@ function Dashboard({ onEditProperty }) {
   const viewProperty = (propertyId) => {
     // Mapeo de IDs a rutas
     const routeMap = {
-      'moldes-1680': '/moldes1680',
-      'santa-fe-3770': '/santafe3770',
-      'dorrego-1548': '/dorrego1548',
-      'convencion-1994': '/convencion1994',
-      'ugarteche-2824': '/ugarteche2824'
+      'moldes-1680': '/departamentos/moldes-1680',
+      'santa-fe-3770': '/departamentos/santa-fe-3770',
+      'dorrego-1548': '/departamentos/dorrego-1548',
+      'convencion-1994': '/departamentos/convencion-1994',
+      'ugarteche-2824': '/departamentos/ugarteche-2824'
     };
 
     const route = routeMap[propertyId];
@@ -68,7 +68,7 @@ function Dashboard({ onEditProperty }) {
   };
 
   return (
-    <div className="dashboard">
+    <div className="dashboard">      
       <div className="dashboard-header">
         <h2>
           <i className="fas fa-chart-line"></i>
@@ -192,14 +192,16 @@ function Dashboard({ onEditProperty }) {
           <button 
             className="action-btn"
             onClick={() => handleQuickAction('add-property')}
+            title="Agregar una nueva propiedad al sistema"
           >
-            <i className="fas fa-plus"></i>
+            <i className="fas fa-plus-circle"></i>
             <span>Agregar Propiedad</span>
           </button>
           
           <button 
             className="action-btn"
             onClick={() => handleQuickAction('manage-images')}
+            title="Gestionar las imágenes de las propiedades"
           >
             <i className="fas fa-images"></i>
             <span>Gestionar Imágenes</span>
@@ -208,16 +210,18 @@ function Dashboard({ onEditProperty }) {
           <button 
             className="action-btn"
             onClick={() => handleQuickAction('update-prices')}
+            title="Actualizar precios de las propiedades"
           >
-            <i className="fas fa-dollar-sign"></i>
+            <i className="fas fa-tag"></i>
             <span>Actualizar Precios</span>
           </button>
           
           <button 
             className="action-btn"
             onClick={exportData}
+            title="Exportar datos de las propiedades"
           >
-            <i className="fas fa-file-export"></i>
+            <i className="fas fa-download"></i>
             <span>Exportar Datos</span>
           </button>
         </div>

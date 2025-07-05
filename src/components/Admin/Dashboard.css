@@ -209,51 +209,85 @@
   border-radius: 12px;
   padding: 30px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-top: 20px;
 }
 
 .quick-actions h3 {
   color: #333;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 1.3rem;
+  font-weight: 600;
 }
 
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  justify-items: center;
 }
 
 .action-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 20px;
-  background: #f8f9fa;
+  justify-content: center;
+  gap: 12px;
+  padding: 25px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
   border: 2px solid #e9ecef;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   color: #495057;
+  width: 100%;
+  max-width: 220px;
+  min-height: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.action-btn:hover::before {
+  opacity: 1;
 }
 
 .action-btn:hover {
-  background: #667eea;
   border-color: #667eea;
   color: white;
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.25);
 }
 
 .action-btn i {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  margin-bottom: 4px;
+  position: relative;
+  z-index: 2;
 }
 
 .action-btn span {
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -267,9 +301,37 @@
   
   .actions-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .action-btn {
+    min-height: 100px;
+    padding: 20px 15px;
+  }
+  
+  .action-btn i {
+    font-size: 1.6rem;
+  }
+  
+  .action-btn span {
+    font-size: 0.85rem;
   }
   
   .property-actions {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-btn {
+    max-width: 100%;
+  }
+  
+  .quick-actions {
+    padding: 20px;
   }
 }

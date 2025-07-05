@@ -5,8 +5,9 @@ import Dashboard from './Dashboard';
 import PromotionManager from './PromotionManager';
 import AmenitiesManager from './AmenitiesManager';
 import ReviewsAdmin from './ReviewsAdmin';
-import UserManager from './UserManager';
+import SimpleUserManager from './SimpleUserManager';
 import AdminReservations from './AdminReservations';
+import { useEffect } from 'react';
 import './AdminPanel.css';
 import './AdminResponsive.css';
 
@@ -31,7 +32,7 @@ function AdminPanel() {
       case 'reviews':
         return <ReviewsAdmin />;
       case 'users':
-        return <UserManager />;
+        return <SimpleUserManager />;
       case 'promotions':
         return <PromotionManager />;
       case 'amenities':

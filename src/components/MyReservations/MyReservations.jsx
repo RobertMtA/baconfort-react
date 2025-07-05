@@ -18,7 +18,13 @@ function MyReservations() {
   const fetchReservations = async () => {
     try {
       const token = localStorage.getItem('baconfort-token');
-      const response = await fetch(`${API_URL}/api/reservations`, {
+      
+      if (!token) {
+        setError('Debes iniciar sesión para ver tus reservas');
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/reservations/my`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -26,8 +32,15 @@ function MyReservations() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setReservations(data);
+        const responseData = await response.json();
+        console.log('✅ MY RESERVATIONS: Respuesta completa:', responseData);
+        
+        // Extraer el array de reservas de la respuesta
+        const reservationsArray = responseData.data || responseData;
+        console.log('✅ MY RESERVATIONS: Reservas cargadas:', reservationsArray.length);
+        
+        setReservations(reservationsArray);
+        setError(null);
       } else {
         const errorData = await response.json();
         setError(errorData.message || 'Error cargando reservas');
@@ -47,7 +60,13 @@ function MyReservations() {
 
     try {
       const token = localStorage.getItem('baconfort-token');
-      const response = await fetch(`${API_URL}/api/reservations/${reservationId}/cancel`, {
+      
+      if (!token) {
+        alert('Debes iniciar sesión para cancelar reservas');
+        return;
+      }
+      
+      const response = await fetch(`${API_URL}/reservations/${reservationId}/cancel`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

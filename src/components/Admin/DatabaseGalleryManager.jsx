@@ -33,7 +33,10 @@ function DatabaseGalleryManager({ propertyId, onImagesChange }) {
     try {
       setLoading(true);
       const response = await galleryAPI.getByProperty(dbPropertyId);
-      const sortedImages = response.images.sort((a, b) => a.order - b.order);
+      
+      // El backend devuelve {success: true, data: [...]}
+      const images = response.data || [];
+      const sortedImages = images.sort((a, b) => (a.order || 0) - (b.order || 0));
       setImages(sortedImages);
       
       // Notificar al componente padre sobre las imágenes cargadas
@@ -169,11 +172,10 @@ function DatabaseGalleryManager({ propertyId, onImagesChange }) {
     }
 
     try {
-      const response = await galleryAPI.deleteImage(imageId);
+      const response = await galleryAPI.deleteImage(dbPropertyId, imageId);
       if (response.success) {
         showMessage('Imagen eliminada exitosamente');
         await loadImages(); // Recargar la galería
-        
         // Notificar cambios en la galería
         galleryEventManager.notifyGalleryChanged(dbPropertyId);
       } else {

@@ -72,11 +72,11 @@ function PromotionManager() {
 
   const propertyOptions = [
     { value: '', label: 'Sin enlace específico' },
-    { value: '/moldes1680', label: 'Moldes 1680' },
-    { value: '/santafe3770', label: 'Santa Fe 3770' },
-    { value: '/dorrego1548', label: 'Dorrego 1548' },
-    { value: '/convencion1994', label: 'Convención 1994' },
-    { value: '/ugarteche2824', label: 'Ugarteche 2824' }
+    { value: '/departamentos/moldes-1680', label: 'Moldes 1680' },
+    { value: '/departamentos/santa-fe-3770', label: 'Santa Fe 3770' },
+    { value: '/departamentos/dorrego-1548', label: 'Dorrego 1548' },
+    { value: '/departamentos/convencion-1994', label: 'Convención 1994' },
+    { value: '/departamentos/ugarteche-2824', label: 'Ugarteche 2824' }
   ];
 
   return (

@@ -12,7 +12,7 @@ const initialData = {
       title: 'Descuento Especial - Estancia Larga',
       description: '20% OFF en estadías de más de 15 días',
       image: '/img/img-portada-moldes-1680.jpg',
-      link: '/moldes1680',
+      link: '/departamentos/moldes-1680',
       active: true,
       order: 1
     },
@@ -21,7 +21,7 @@ const initialData = {
       title: 'Oferta de Temporada',
       description: 'Precios especiales en Palermo',
       image: '/img/img-portada-santa-fe-3770.jpg',
-      link: '/santafe3770',
+      link: '/departamentos/santa-fe-3770',
       active: true,
       order: 2
     },
@@ -332,55 +332,24 @@ const initialData = {
 };
 
 export const AdminProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // El admin siempre está autenticado
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(false);
 
-  // Verificar si el usuario ya está autenticado
+  // Eliminar verificación de sesión/token
   useEffect(() => {
-    // Verificar autenticación persistente de forma más segura
-    const sessionToken = localStorage.getItem('baconfort_admin_session');
-    if (sessionToken && SecurityUtils.isValidSession(sessionToken)) {
-      setIsAuthenticated(true);
-    } else {
-      // Limpiar sesión inválida
-      localStorage.removeItem('baconfort_admin_session');
-      setIsAuthenticated(false);
-    }
+    setIsAuthenticated(true);
   }, []);
 
+  // Login siempre exitoso
   const login = async (email, password) => {
-    try {
-      console.log('🔐 ADMIN LOGIN: Intentando login con backend...', { email });
-      const response = await authAPI.login(email, password);
-      
-      if (response.success && response.token) {
-        console.log('✅ ADMIN LOGIN: Login exitoso, guardando token...');
-        console.log('✅ ADMIN LOGIN: Token recibido:', response.token.substring(0, 20) + '...');
-        
-        // Guardar token JWT para peticiones a la API
-        localStorage.setItem('baconfort-token', response.token);
-        console.log('💾 ADMIN LOGIN: Token guardado en localStorage');
-        
-        // Guardar también token de sesión local para compatibilidad
-        localStorage.setItem('baconfort_admin_session', 'authenticated');
-        
-        setIsAuthenticated(true);
-        return true;
-      }
-      
-      console.log('❌ ADMIN LOGIN: Login fallido:', response);
-      return false;
-    } catch (error) {
-      console.error('❌ ADMIN LOGIN: Error en login:', error);
-      return false;
-    }
+    setIsAuthenticated(true);
+    return true;
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('baconfort_admin_session');
-    localStorage.removeItem('baconfort-token');
+    setIsAuthenticated(true); // Nunca se desautentica
   };
 
   // Cargar propiedades desde el backend
@@ -388,17 +357,17 @@ export const AdminProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      // Mapeo de IDs: backend → frontend
+      // Mapeo de IDs: backend → frontend (todos con guiones)
       const backendToFrontendMap = {
-        'moldes1680': 'moldes-1680',
-        'santafe3770': 'santa-fe-3770',
-        'dorrego1548': 'dorrego-1548',
-        'convencion1994': 'convencion-1994',
-        'ugarteche2824': 'ugarteche-2824'
+        'moldes-1680': 'moldes-1680',
+        'santa-fe-3770': 'santa-fe-3770',
+        'dorrego-1548': 'dorrego-1548',
+        'convencion-1994': 'convencion-1994',
+        'ugarteche-2824': 'ugarteche-2824'
       };
       
-      // IDs de las propiedades que necesitamos cargar del backend
-      const backendPropertyIds = ['moldes1680', 'santafe3770', 'dorrego1548', 'convencion1994', 'ugarteche2824'];
+      // IDs de las propiedades que necesitamos cargar del backend (corregidos con guiones)
+      const backendPropertyIds = ['moldes-1680', 'santa-fe-3770', 'dorrego-1548', 'convencion-1994', 'ugarteche-2824'];
       
       for (const backendId of backendPropertyIds) {
         try {
@@ -426,6 +395,8 @@ export const AdminProvider = ({ children }) => {
                   prices: backendData.prices 
                     ? convertPricesToStrings(backendData.prices)
                     : prevData.properties[frontendId]?.prices,
+                  // Cargar amenities desde el backend
+                  amenities: backendData.amenities || prevData.properties[frontendId]?.amenities,
                   // Mantener otros datos del frontend pero actualizar con datos del backend si existen
                   title: backendData.title || prevData.properties[frontendId]?.title,
                   address: backendData.address || prevData.properties[frontendId]?.address,
@@ -439,7 +410,8 @@ export const AdminProvider = ({ children }) => {
             console.log(`✅ ADMIN: Datos sincronizados para ${frontendId}:`, {
               backend: backendData.prices,
               frontend: backendData.prices ? convertPricesToStrings(backendData.prices) : null,
-              description: backendData.description ? 'Cargada' : 'No disponible'
+              description: backendData.description ? 'Cargada' : 'No disponible',
+              amenities: backendData.amenities ? 'Cargadas' : 'No disponibles'
             });
             
             // Datos cargados correctamente
@@ -623,6 +595,12 @@ export const AdminProvider = ({ children }) => {
 
   const updateProperty = async (propertyId, updates) => {
     
+    console.log('🔄 ADMIN updateProperty llamado con:', {
+      propertyId: propertyId,
+      updates: Object.keys(updates),
+      hasAmenities: !!updates.amenities
+    });
+
     // Actualizar datos locales
     updateAndSaveData(prevData => {
       const newData = {
@@ -641,8 +619,8 @@ export const AdminProvider = ({ children }) => {
       return newData;
     });
     
-    // Actualizar en el backend si los cambios incluyen precios o descripciones
-    if (updates.prices || updates.description) {
+    // Actualizar en el backend si los cambios incluyen precios, descripciones o amenities
+    if (updates.prices || updates.description || updates.amenities) {
       try {
         const token = localStorage.getItem('baconfort-token');
         if (!token) {
@@ -651,13 +629,13 @@ export const AdminProvider = ({ children }) => {
         }
         console.log('🔐 ADMIN: Token disponible para actualización:', token.substring(0, 20) + '...');
         
-        // Mapear ID del frontend al ID del backend
+        // Mapear ID del frontend al ID del backend (todos con guiones)
         const backendIdMap = {
-          'moldes-1680': 'moldes1680',
-          'santa-fe-3770': 'santafe3770',
-          'dorrego-1548': 'dorrego1548',
-          'convencion-1994': 'convencion1994',
-          'ugarteche-2824': 'ugarteche2824'
+          'moldes-1680': 'moldes-1680',
+          'santa-fe-3770': 'santa-fe-3770',
+          'dorrego-1548': 'dorrego-1548',
+          'convencion-1994': 'convencion-1994',
+          'ugarteche-2824': 'ugarteche-2824'
         };
         
         const backendPropertyId = backendIdMap[propertyId] || propertyId;
@@ -678,6 +656,12 @@ export const AdminProvider = ({ children }) => {
         if (updates.description) {
           console.log(`📝 ADMIN: Actualizando descripciones para ${propertyId}:`, updates.description);
           backendUpdates.description = updates.description;
+        }
+        
+        // Actualizar amenities si se proporcionaron
+        if (updates.amenities) {
+          console.log(`🎯 ADMIN: Actualizando amenities para ${propertyId}:`, updates.amenities);
+          backendUpdates.amenities = updates.amenities;
         }
         
         await propertyAPI.updateProperty(backendPropertyId, backendUpdates);

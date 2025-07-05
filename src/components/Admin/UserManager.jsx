@@ -250,8 +250,8 @@ function UserManager() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map(userData => (
-                <tr key={userData._id} className={userData._id === user._id ? 'current-user' : ''}>
+              {filteredUsers.filter(userData => userData && userData._id).map(userData => (
+                <tr key={userData._id} className={userData._id === user?._id ? 'current-user' : ''}>
                   <td>
                     <div className="user-info">
                       <div className="user-avatar">

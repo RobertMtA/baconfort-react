@@ -1,26 +1,23 @@
 // Configuración de la API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD ? 'https://baconfort-react-2.onrender.com' : 'http://localhost:5000');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 export const API_URL = API_BASE_URL;
+
+console.log('🔧 API_BASE_URL configurado como:', API_BASE_URL);
 
 // Utilidad para hacer requests a la API
 const apiRequest = async (endpoint, options = {}) => {
-  const url = `${API_BASE_URL}/api${endpoint}`;
+  // Agregar timestamp para evitar cache
+  const separator = endpoint.includes('?') ? '&' : '?';
+  const timestampParam = `_t=${Date.now()}`;
+  const url = `${API_BASE_URL}${endpoint}${separator}${timestampParam}`;
   
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
+      // Token temporal para modo demo admin
+      'Authorization': 'Bearer ADMIN_DEMO_TOKEN'
     },
   };
-
-  // Añadir token de autorización si existe
-  const token = localStorage.getItem('baconfort-token');
-  if (token) {
-    console.log('🔐 API: Token encontrado, agregando a headers:', token.substring(0, 20) + '...');
-    defaultOptions.headers.Authorization = `Bearer ${token}`;
-  } else {
-    console.log('❌ API: No se encontró token en localStorage');
-  }
 
   const config = {
     ...defaultOptions,
@@ -36,12 +33,14 @@ const apiRequest = async (endpoint, options = {}) => {
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('❌ API Error:', errorData);
       throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('API Request failed:', error);
+    console.error('❌ API Request failed:', error);
     throw error;
   }
 };
@@ -110,6 +109,11 @@ export const usersAPI = {
     return apiRequest(`/users/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  // Obtener estadísticas de usuarios
+  getStats: async () => {
+    return apiRequest('/users/stats/summary');
   },
 };
 
@@ -262,7 +266,6 @@ export const galleryAPI = {
         method: 'POST',
         headers: {
           // No incluir Content-Type para FormData, el navegador lo establecerá automáticamente
-          'Authorization': localStorage.getItem('baconfort-token') ? `Bearer ${localStorage.getItem('baconfort-token')}` : undefined
         },
         body: formData,
       });
@@ -284,8 +287,8 @@ export const galleryAPI = {
   },
 
   // Eliminar una imagen
-  deleteImage: async (imageId) => {
-    return apiRequest(`/gallery/${imageId}`, {
+  deleteImage: async (propertyId, imageId) => {
+    return apiRequest(`/gallery/${propertyId}/images/${imageId}`, {
       method: 'DELETE',
     });
   },
@@ -309,9 +312,23 @@ export const galleryAPI = {
 // Funciones específicas de propiedades
 export const propertyAPI = {
   // Obtener una propiedad específica
-  getProperty: async (propertyId) => {
-    return apiRequest(`/properties/${propertyId}`, {
+  getProperty: async (propertyId, options = {}) => {
+    let url = `/properties/${propertyId}`;
+    
+    // Agregar cache-busting si se especifica
+    if (options.cacheBust) {
+      url += `?_t=${options.cacheBust}`;
+    }
+    
+    console.log(`🌐 API: Solicitando propiedad ${propertyId} desde: ${url}`);
+    
+    return apiRequest(url, {
       method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
   },
 

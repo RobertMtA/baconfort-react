@@ -2,21 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { galleryAPI } from '../services/api';
 import galleryEventManager from '../utils/GalleryEventManager';
 
+// Mapeo de IDs de página a IDs de base de datos (fuera del componente para evitar recreación)
+const propertyIdMap = {
+  'moldes1680': 'moldes-1680',
+  'santafe3770': 'santa-fe-3770',
+  'dorrego1548': 'dorrego-1548',
+  'convencion1994': 'convencion-1994',
+  'ugarteche2824': 'ugarteche-2824'
+};
+
 // Hook para cargar galería de imágenes desde la base de datos
 export const useGallery = (propertyId) => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mainImage, setMainImage] = useState(null);
-
-  // Mapeo de IDs de página a IDs de base de datos
-  const propertyIdMap = {
-    'moldes1680': 'moldes-1680',
-    'santafe3770': 'santa-fe-3770',
-    'dorrego1548': 'dorrego-1548',
-    'convencion1994': 'convencion-1994',
-    'ugarteche2824': 'ugarteche-2824'
-  };
 
   const loadGallery = useCallback(async (forceRefresh = false) => {
     if (!propertyId) {
@@ -49,7 +49,7 @@ export const useGallery = (propertyId) => {
     } finally {
       setLoading(false);
     }
-  }, [propertyId, propertyIdMap]);
+  }, [propertyId]); // Remover propertyIdMap de las dependencias
 
   useEffect(() => {
     loadGallery();
@@ -64,7 +64,7 @@ export const useGallery = (propertyId) => {
     });
 
     return unsubscribe;
-  }, [propertyId, loadGallery, propertyIdMap]);
+  }, [propertyId, loadGallery]);
 
   const refreshGallery = () => {
     loadGallery(true);

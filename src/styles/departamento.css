@@ -171,7 +171,194 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Responsive */
+/* Estilos mejorados para la página Moldes1680 */
+
+/* Contenedor principal */
+.moldes-container {
+  padding-top: 76px; /* Altura del navbar fijo */
+}
+
+/* Sección de descripción */
+.service {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  margin: 2rem 0;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.service h3 {
+  color: var(--dark-color);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.service h3 i {
+  margin-right: 0.5rem;
+  color: var(--primary-color);
+}
+
+.description {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.description p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.description strong {
+  color: var(--dark-color);
+  font-weight: 600;
+}
+
+.description hr {
+  margin: 1.5rem 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #ddd, transparent);
+}
+
+/* Sección de amenities mejorada */
+.amenities-list {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 12px;
+  margin: 2rem 0;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.amenities-list h3 {
+  color: var(--dark-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.amenities-list .row {
+  margin-top: 1.5rem;
+}
+
+.amenities-list .col-md-4 {
+  margin-bottom: 2rem;
+}
+
+.amenities-list h4 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.amenities-list ul {
+  padding-left: 0;
+}
+
+.amenities-list li {
+  padding: 0.5rem 0;
+  color: #555;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.amenities-list li:hover {
+  color: var(--primary-color);
+  transform: translateX(5px);
+}
+
+.amenities-list li i {
+  margin-right: 0.75rem;
+  width: 20px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Botón de actualizar mejorado */
+.btn-outline-primary {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: var(--transition);
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Indicador de modo offline */
+.text-warning {
+  color: #f39c12 !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+  font-size: 0.9rem;
+}
+
+/* Sección de precios mejorada */
+.pricing-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  margin: 2rem 0;
+  color: white;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+.pricing-title {
+  color: white;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Espaciado mejorado */
+.mb-5 {
+  margin-bottom: 3rem !important;
+}
+
+.mt-5 {
+  margin-top: 3rem !important;
+}
+
+/* Responsive mejorado */
+@media (max-width: 768px) {
+  .service {
+    padding: 2rem 1rem;
+  }
+  
+  .amenities-list {
+    padding: 2rem 1rem;
+  }
+  
+  .pricing-container {
+    padding: 2rem 1rem;
+  }
+  
+  .pricing-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 992px) {
   .video-hero {
     height: 60vh;

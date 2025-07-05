@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install --max-old-space-size=4096",
+  "framework": "vite",
+  "routes": [
+    {
+      "src": "/[^.]*",
+      "dest": "/",
+      "status": 200
+    }
+  ]
+}

@@ -134,11 +134,18 @@ function ReservationForm({ apartmentName = "este departamento" }) {
       // Obtener el token de autenticación
       const token = localStorage.getItem('baconfort-token');
       
+      if (!token) {
+        alert('Debes iniciar sesión para hacer una reserva');
+        setAuthMode('login');
+        setShowAuthModal(true);
+        return;
+      }
+      
       // Obtener propertyId desde la URL actual
       const path = window.location.pathname;
       const propertyId = path.split('/').pop(); // Último segmento de la URL
       
-      const response = await fetch(`${API_URL}/api/reservations`, {
+      const response = await fetch(`${API_URL}/reservations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

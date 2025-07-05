@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getUserReservations, updateReservationStatus, API_URL } from '../../services/api';
+import { getUserReservations, updateReservationStatus } from '../../services/api';
 import './UserReservations.css';
 
 const UserReservations = () => {
@@ -7,42 +7,12 @@ const UserReservations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('active'); // active, completed, cancelled
-  const [connectionStatus, setConnectionStatus] = useState('unknown'); // unknown, connected, disconnected
+  const [selectedReservation, setSelectedReservation] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
-    console.log('🔄 UserReservations: componente montado, iniciando carga...');
     loadReservations();
-    checkConnection();
   }, []);
-
-  const checkConnection = async () => {
-    console.log('🔍 UserReservations: verificando conexión...');
-    try {
-      const token = localStorage.getItem('baconfort-token');
-      if (!token) {
-        console.log('❌ UserReservations: no hay token');
-        setConnectionStatus('disconnected');
-        return;
-      }
-      
-      const response = await fetch(`${API_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        console.log('✅ UserReservations: conexión OK');
-        setConnectionStatus('connected');
-      } else {
-        console.log('❌ UserReservations: conexión fallida');
-        setConnectionStatus('disconnected');
-      }
-    } catch (err) {
-      console.log('❌ UserReservations: error de conexión:', err);
-      setConnectionStatus('disconnected');
-    }
-  };
 
   const loadReservations = async () => {
     console.log('📥 UserReservations: iniciando carga de reservas...');
@@ -59,28 +29,16 @@ const UserReservations = () => {
       // Verificar si data es un array, si no, crear array vacío
       if (Array.isArray(data)) {
         setReservations(data);
-      } else if (data && Array.isArray(data.reservations)) {
-        setReservations(data.reservations);
+      } else if (data && data.data && Array.isArray(data.data)) {
+        setReservations(data.data);
       } else {
         setReservations([]);
       }
       
     } catch (err) {
       console.error('Error al cargar reservas:', err);
-      
-      // Manejo más específico de errores
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        setError('Sesión expirada. Por favor, inicia sesión nuevamente.');
-      } else if (err.message.includes('404')) {
-        setError('No se encontraron reservas para tu cuenta.');
-        setReservations([]);
-      } else if (err.message.includes('500')) {
-        setError('Error del servidor. Por favor, intenta más tarde.');
-      } else if (err.message.includes('fetch')) {
-        setError('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
-      } else {
-        setError(`Error al cargar las reservas: ${err.message}`);
-      }
+      setError('Error al cargar reservas');
+      setReservations([]);
     } finally {
       setLoading(false);
     }
@@ -104,6 +62,17 @@ const UserReservations = () => {
       console.error('Error al cancelar reserva:', err);
       setError('Error al cancelar la reserva');
     }
+  };
+
+  const handleViewDetails = (reservation) => {
+    console.log('🔍 Ver detalles de reserva:', reservation._id);
+    setSelectedReservation(reservation);
+    setShowDetailsModal(true);
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedReservation(null);
   };
 
   const filterReservations = (status) => {
@@ -169,101 +138,6 @@ const UserReservations = () => {
 
   const filteredReservations = filterReservations(activeTab);
 
-  const testConnection = async () => {
-    try {
-      console.log('🔍 Iniciando prueba de conexión...');
-      
-      // Verificar token en localStorage
-      const token = localStorage.getItem('baconfort-token');
-      console.log('🔑 Token en localStorage:', token ? `${token.substring(0, 20)}...` : 'No encontrado');
-      
-      if (!token) {
-        setError('No hay token de autenticación. Por favor, inicia sesión nuevamente.');
-        return;
-      }
-      
-      // Prueba de conectividad básica
-      console.log('🌐 Probando conectividad con el servidor...');
-      const testResponse = await fetch(`${API_URL}/api/auth/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      console.log('📡 Respuesta del servidor:', testResponse.status);
-      
-      if (!testResponse.ok) {
-        const errorData = await testResponse.json().catch(() => ({}));
-        throw new Error(`Servidor respondió con estado: ${testResponse.status} - ${errorData.error || 'Error desconocido'}`);
-      }
-      
-      const userInfo = await testResponse.json();
-      console.log('👤 Información del usuario:', userInfo);
-      
-      // Prueba específica de reservas
-      console.log('📅 Probando endpoint de reservas...');
-      const reservationResponse = await fetch(`${API_URL}/api/reservations`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('📋 Respuesta de reservas:', reservationResponse.status);
-      
-      if (reservationResponse.ok) {
-        const data = await reservationResponse.json();
-        console.log('✅ Datos de reservas recibidos:', data);
-        setReservations(Array.isArray(data) ? data : []);
-        setError('');
-        setConnectionStatus('connected');
-      } else {
-        const errorData = await reservationResponse.json().catch(() => ({}));
-        throw new Error(errorData.error || `Error ${reservationResponse.status}`);
-      }
-      
-    } catch (err) {
-      console.error('❌ Error en prueba de conexión:', err);
-      setError(`Error de conexión: ${err.message}`);
-      setConnectionStatus('disconnected');
-    }
-  };
-
-  const loginTestUser = async () => {
-    try {
-      console.log('🔑 Haciendo login automático con usuario de prueba...');
-      
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: 'test@example.com',
-          password: 'password123'
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem('baconfort-token', data.token);
-        localStorage.setItem('baconfort-user', JSON.stringify(data.user));
-        console.log('✅ Login automático exitoso');
-        
-        // Recargar reservas
-        await loadReservations();
-        await checkConnection();
-      } else {
-        const errorData = await response.json();
-        console.error('❌ Error en login automático:', errorData);
-        setError(`Error en login automático: ${errorData.error}`);
-      }
-    } catch (err) {
-      console.error('❌ Error en login automático:', err);
-      setError(`Error en login automático: ${err.message}`);
-    }
-  };
-
   if (loading) {
     return (
       <div className="user-reservations-container">
@@ -288,14 +162,6 @@ const UserReservations = () => {
               <i className="fas fa-redo"></i>
               Reintentar
             </button>
-            <button className="btn btn-secondary" onClick={testConnection}>
-              <i className="fas fa-stethoscope"></i>
-              Diagnóstico
-            </button>
-            <button className="btn btn-success" onClick={loginTestUser}>
-              <i className="fas fa-user-check"></i>
-              Login Prueba
-            </button>
           </div>
         </div>
       </div>
@@ -308,18 +174,6 @@ const UserReservations = () => {
         <h2>
           <i className="fas fa-calendar-alt"></i>
           Mis Reservas
-          {connectionStatus === 'disconnected' && (
-            <span className="connection-status offline">
-              <i className="fas fa-exclamation-triangle"></i>
-              Sin conexión
-            </span>
-          )}
-          {connectionStatus === 'connected' && (
-            <span className="connection-status online">
-              <i className="fas fa-check-circle"></i>
-              Conectado
-            </span>
-          )}
         </h2>
         <p>Gestiona y revisa el historial de tus reservas</p>
       </div>
@@ -403,13 +257,6 @@ const UserReservations = () => {
                   <i className="fas fa-redo"></i>
                   Actualizar
                 </button>
-                <button 
-                  className="btn btn-success"
-                  onClick={loginTestUser}
-                >
-                  <i className="fas fa-user-check"></i>
-                  Login Prueba
-                </button>
               </div>
             )}
           </div>
@@ -489,7 +336,10 @@ const UserReservations = () => {
                   </button>
                 )}
                 
-                <button className="btn btn-info">
+                <button 
+                  className="btn btn-info"
+                  onClick={() => handleViewDetails(reservation)}
+                >
                   <i className="fas fa-eye"></i>
                   Ver Detalles
                 </button>
@@ -498,6 +348,50 @@ const UserReservations = () => {
           ))
         )}
       </div>
+
+      {/* Modal de detalles de reserva */}
+      {showDetailsModal && (
+        <div className="details-modal">
+          <div className="modal-content">
+            <span className="close" onClick={closeDetailsModal}>&times;</span>
+            <h3>Detalles de la Reserva</h3>
+            
+            {selectedReservation && (
+              <div className="reservation-details-modal">
+                <div className="detail-item">
+                  <strong>Propiedad:</strong> {selectedReservation.propertyName}
+                </div>
+                <div className="detail-item">
+                  <strong>ID de Propiedad:</strong> {selectedReservation.propertyId}
+                </div>
+                <div className="detail-item">
+                  <strong>Check-in:</strong> {formatDate(selectedReservation.checkIn)}
+                </div>
+                <div className="detail-item">
+                  <strong>Check-out:</strong> {formatDate(selectedReservation.checkOut)}
+                </div>
+                <div className="detail-item">
+                  <strong>Noches:</strong> {calculateNights(selectedReservation.checkIn, selectedReservation.checkOut)}
+                </div>
+                <div className="detail-item">
+                  <strong>Huéspedes:</strong> {selectedReservation.guests}
+                </div>
+                {selectedReservation.specialRequests && (
+                  <div className="detail-item">
+                    <strong>Solicitudes especiales:</strong> {selectedReservation.specialRequests}
+                  </div>
+                )}
+                <div className="detail-item">
+                  <strong>Estado:</strong> {getStatusText(selectedReservation.status)}
+                </div>
+                <div className="detail-item">
+                  <strong>Fecha de creación:</strong> {formatDate(selectedReservation.createdAt)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
