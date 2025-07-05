@@ -95,12 +95,13 @@ reviewSchema.index({ rating: -1 });
 reviewSchema.index({ isHighlight: -1, isApproved: 1 });
 
 // Validación para evitar reviews duplicadas del mismo usuario para la misma propiedad
+// Para usuarios no registrados, usamos el email como identificador único
 reviewSchema.index({ 
   propertyId: 1, 
-  user: 1 
+  guestEmail: 1 
 }, { 
   unique: true, 
-  sparse: true // Permite null en user para reviews de no registrados
+  sparse: false // Siempre debe haber email
 });
 
 // Middleware para actualizar estadísticas de la propiedad

@@ -153,10 +153,21 @@ propertySchema.virtual('reviews', {
   foreignField: 'propertyId'
 });
 
-// Método para incrementar views
-propertySchema.methods.incrementViews = function() {
-  this.stats.views += 1;
-  return this.save();
+// Método para incrementar views de forma atómica
+propertySchema.methods.incrementViews = async function() {
+  // Usar findOneAndUpdate para evitar corrupción de datos
+  try {
+    await mongoose.model('Property').findOneAndUpdate(
+      { id: this.id },
+      { $inc: { 'stats.views': 1 } },
+      { new: true }
+    );
+    this.stats.views += 1; // Actualizar el objeto en memoria para consistencia
+    return this;
+  } catch (error) {
+    console.error('Error incrementando views:', error);
+    return this;
+  }
 };
 
 // Método para actualizar estadísticas de reviews

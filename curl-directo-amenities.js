@@ -1,0 +1,45 @@
+// OPCIÓN 3: Usar cURL directo (más simple)
+// Ejecutar este comando en cualquier terminal
+
+console.log('🚀 OPCIÓN 3: Comando cURL directo');
+console.log('=================================');
+console.log('');
+console.log('Copia y pega este comando en una terminal:');
+console.log('');
+console.log('curl -X PUT "http://localhost:5000/api/properties/moldes-1680" \\');
+console.log('  -H "Content-Type: application/json" \\');
+console.log('  -H "Authorization: Bearer ADMIN_DEMO_TOKEN" \\');
+console.log('  -d "{');
+console.log('    \\"amenities\\": {');
+console.log('      \\"departamento\\": [');
+console.log('        {\\"icon\\": \\"fas fa-tv\\", \\"text\\": \\"Smart TV 65\\\\\\" 4K HDR\\"},');
+console.log('        {\\"icon\\": \\"fas fa-wifi\\", \\"text\\": \\"WiFi Fibra Óptica 1GB\\"},');
+console.log('        {\\"icon\\": \\"fas fa-snowflake\\", \\"text\\": \\"Aire Central Premium\\"},');
+console.log('        {\\"icon\\": \\"fas fa-utensils\\", \\"text\\": \\"Cocina Italiana Completa\\"},');
+console.log('        {\\"icon\\": \\"fas fa-coffee\\", \\"text\\": \\"Set Café Profesional\\"}');
+console.log('      ],');
+console.log('      \\"servicios\\": [');
+console.log('        {\\"icon\\": \\"fas fa-shield-alt\\", \\"text\\": \\"Seguridad 24/7 Premium\\"},');
+console.log('        {\\"icon\\": \\"fas fa-concierge-bell\\", \\"text\\": \\"Concierge Multiidioma\\"},');
+console.log('        {\\"icon\\": \\"fas fa-broom\\", \\"text\\": \\"Housekeeping Diario\\"},');
+console.log('        {\\"icon\\": \\"fas fa-car\\", \\"text\\": \\"Valet Parking Incluido\\"}');
+console.log('      ],');
+console.log('      \\"amenitiesEdificio\\": [');
+console.log('        {\\"icon\\": \\"fas fa-swimming-pool\\", \\"text\\": \\"Piscina Infinity Climatizada\\"},');
+console.log('        {\\"icon\\": \\"fas fa-dumbbell\\", \\"text\\": \\"Gym Tecnológico 24hs\\"},');
+console.log('        {\\"icon\\": \\"fas fa-spa\\", \\"text\\": \\"Spa & Wellness Center\\"},');
+console.log('        {\\"icon\\": \\"fas fa-sun\\", \\"text\\": \\"Rooftop Lounge & Bar\\"}');
+console.log('      ]');
+console.log('    }');
+console.log('  }"');
+console.log('');
+console.log('🎯 DESPUÉS:');
+console.log('1. Ve a: http://localhost:3001/departamentos/moldes-1680');
+console.log('2. Ctrl+Shift+R para refrescar');
+console.log('3. ¡Listo!');
+console.log('');
+console.log('💡 MÁS FÁCIL AÚN:');
+console.log('Usa Postman o cualquier cliente REST');
+console.log('PUT http://localhost:5000/api/properties/moldes-1680');
+console.log('Headers: Content-Type: application/json');
+console.log('Body: El JSON de arriba');

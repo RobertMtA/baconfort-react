@@ -1,0 +1,10 @@
+{
+  "amenities": {
+    "departamento": [
+      {
+        "icon": "fas fa-tv",
+        "text": "PRUEBA Smart TV Thunder Client"
+      }
+    ]
+  }
+}

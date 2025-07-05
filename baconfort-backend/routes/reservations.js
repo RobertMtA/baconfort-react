@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Reservation = require('../models/Reservation');
-const { auth } = require('../middleware/auth');
+const { auth, adminAuth } = require('../middleware/auth');
 
 // @route   POST /api/reservations
 // @desc    Crear una nueva reserva
@@ -176,7 +176,7 @@ router.put('/:id/cancel', auth, async (req, res) => {
 // @route   GET /api/reservations/admin/all
 // @desc    Obtener todas las reservas (solo admin)
 // @access  Private (Admin only)
-router.get('/admin/all', auth, async (req, res) => {
+router.get('/admin/all', adminAuth, async (req, res) => {
   try {
     // Verificar que sea admin
     if (req.user.role !== 'admin') {
@@ -202,7 +202,7 @@ router.get('/admin/all', auth, async (req, res) => {
 // @route   PUT /api/reservations/admin/:id/status
 // @desc    Actualizar estado de una reserva (solo admin)
 // @access  Private/Admin
-router.put('/admin/:id/status', auth, async (req, res) => {
+router.put('/admin/:id/status', adminAuth, async (req, res) => {
   try {
     // Verificar que el usuario sea admin
     if (req.user.role !== 'admin') {

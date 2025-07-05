@@ -50,6 +50,8 @@ router.get('/', optionalAuth, async (req, res) => {
 // @access  Public
 router.get('/:id', optionalAuth, async (req, res) => {
   try {
+    console.log(`🔍 BACKEND: Solicitando propiedad ID: ${req.params.id}`);
+    
     const property = await Property.findOne({ 
       id: req.params.id,
       isActive: true 
@@ -61,8 +63,24 @@ router.get('/:id', optionalAuth, async (req, res) => {
       });
     }
 
-    // Incrementar views
+    // Incrementar views de forma segura
     await property.incrementViews();
+
+    console.log(`✅ BACKEND: Propiedad encontrada:`, {
+      id: property.id,
+      amenitiesCount: {
+        departamento: property.amenities?.departamento?.length || 0,
+        servicios: property.amenities?.servicios?.length || 0,
+        amenitiesEdificio: property.amenities?.amenitiesEdificio?.length || 0
+      }
+    });
+
+    // Agregar headers para evitar cache
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.json({
       success: true,
@@ -104,6 +122,8 @@ router.post('/', adminAuth, async (req, res) => {
 // @access  Admin
 router.put('/:id', adminAuth, async (req, res) => {
   try {
+    console.log(`🔄 PUT /api/properties/${req.params.id} - Body:`, JSON.stringify(req.body, null, 2));
+    
     const property = await Property.findOneAndUpdate(
       { id: req.params.id },
       req.body,
@@ -111,11 +131,13 @@ router.put('/:id', adminAuth, async (req, res) => {
     );
 
     if (!property) {
+      console.log(`❌ Property not found: ${req.params.id}`);
       return res.status(404).json({
         error: 'Propiedad no encontrada'
       });
     }
 
+    console.log(`✅ Property updated successfully: ${req.params.id}`);
     res.json({
       success: true,
       message: 'Propiedad actualizada exitosamente',
@@ -123,7 +145,7 @@ router.put('/:id', adminAuth, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error actualizando propiedad:', error);
+    console.error('❌ Error actualizando propiedad:', error);
     res.status(500).json({
       error: 'Error interno del servidor'
     });

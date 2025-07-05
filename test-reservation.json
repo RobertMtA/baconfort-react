@@ -1,0 +1,11 @@
+{
+  "propertyId": "moldes-1680",
+  "propertyName": "Moldes 1680",
+  "checkIn": "2025-08-01",
+  "checkOut": "2025-08-05",
+  "guests": "2",
+  "fullName": "Usuario de Prueba",
+  "email": "test@example.com",
+  "phone": "+54 11 1234-5678",
+  "message": "Prueba de creación desde curl"
+}

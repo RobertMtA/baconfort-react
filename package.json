@@ -28,6 +28,8 @@
   "author": "Roberto Gaona",
   "license": "MIT",
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "axios": "^1.10.0",
+    "node-fetch": "^3.3.2",
+    "validator": "^13.15.15"
   }
 }

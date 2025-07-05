@@ -1,0 +1,34 @@
+🔧 THUNDER CLIENT - CONFIGURACIÓN COMPLETA
+==========================================
+
+📋 CONFIGURACIÓN PASO A PASO:
+
+1. Method: PUT
+2. URL: http://localhost:5000/api/properties/moldes-1680
+
+3. HEADERS (Agregar ambos):
+   Key: Content-Type
+   Value: application/json
+   
+   Key: Authorization  
+   Value: Bearer ADMIN_DEMO_TOKEN
+
+4. Body: 
+   - Seleccionar "JSON"
+   - Pegar el JSON completo
+
+🚨 PROBLEMA ACTUAL:
+El error "Acceso denegado. Token requerido" significa que 
+falta el header Authorization.
+
+✅ SOLUCIÓN:
+Asegúrate de agregar EXACTAMENTE:
+Authorization: Bearer ADMIN_DEMO_TOKEN
+
+(Con espacio después de "Bearer")
+
+🔍 VERIFICACIÓN:
+En Thunder Client debe verse así:
+Headers (2):
+✓ Content-Type: application/json
+✓ Authorization: Bearer ADMIN_DEMO_TOKEN

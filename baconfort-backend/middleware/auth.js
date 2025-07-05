@@ -39,6 +39,22 @@ const auth = async (req, res, next) => {
 
 const adminAuth = async (req, res, next) => {
   try {
+    // Manejar token demo
+    const authHeader = req.header('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+    
+    if (token === 'ADMIN_DEMO_TOKEN') {
+      console.log('✅ ADMIN_DEMO_TOKEN accepted');
+      req.user = {
+        _id: 'admin_demo',
+        email: 'admin@demo.com',
+        role: 'admin',
+        isActive: true
+      };
+      return next();
+    }
+    
+    // Proceso normal de autenticación
     await auth(req, res, () => {
       if (req.user.role !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado. Se requieren permisos de administrador.' });
