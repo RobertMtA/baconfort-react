@@ -7,6 +7,7 @@ const nodemailer = require('nodemailer');
 const User = require('./models/User');
 // Importar rutas
 const propertiesRoutes = require('./routes/properties');
+const reservationsRoutes = require('./routes/reservations');
 require('dotenv').config();
 
 const app = express();
@@ -24,6 +25,8 @@ const corsOrigins = [
   'https://baconfort.netlify.app',
   'https://baconfort-frontend.vercel.app',
   'https://baconfort-react.vercel.app',
+  'https://baconfort-react-4p2uq0erp-robertogaona1985-1518s-projects.vercel.app',
+  'https://baconfort-react-nwahl24d6-robertogaona1985-1518s-projects.vercel.app',
   process.env.FRONTEND_URL
 ];
 
@@ -33,7 +36,23 @@ if (process.env.CORS_ORIGIN) {
 }
 
 app.use(cors({
-  origin: corsOrigins.filter(Boolean),
+  origin: (origin, callback) => {
+    // Permitir solicitudes sin origin (aplicaciones móviles, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Verificar si el origin está en la lista permitida
+    if (corsOrigins.filter(Boolean).includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Permitir cualquier subdominio de vercel.app
+    if (origin.includes('vercel.app') && origin.includes('baconfort')) {
+      return callback(null, true);
+    }
+    
+    console.log('❌ CORS blocked origin:', origin);
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
@@ -129,6 +148,13 @@ setupEmailTransporter();
 
 // Routes
 app.use('/api/properties', propertiesRoutes);
+app.use('/api/reservations', reservationsRoutes);
+
+// Test routes (solo para desarrollo)
+if (process.env.NODE_ENV !== 'production') {
+  const testEmailRoutes = require('./routes/test-email');
+  app.use('/api/test', testEmailRoutes);
+}
 
 // Health check
 app.get('/api/health', (req, res) => {

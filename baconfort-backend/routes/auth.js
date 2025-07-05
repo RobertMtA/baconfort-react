@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const { sendPasswordResetEmail } = require('../utils/emailNotifications');
 const router = express.Router();
 
 // Generar JWT
@@ -271,10 +272,19 @@ router.post('/forgot-password', async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
     await user.save();
 
+    // Enviar email de recuperación
+    const emailSent = await sendPasswordResetEmail(user.email, user.name, resetToken);
+    
+    if (!emailSent) {
+      console.error('❌ Error enviando email de recuperación');
+      // En caso de error, seguimos devolviendo éxito por seguridad
+    }
+
     // En un entorno real, aquí enviarías un email
     // Por ahora, solo logueamos el token para testing
     console.log(`🔑 Token de reseteo para ${email}: ${resetToken}`);
-    console.log(`🔗 URL de reseteo: http://localhost:3001/reset-password?token=${resetToken}`);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+    console.log(`🔗 URL de reseteo: ${frontendUrl}/reset-password?token=${resetToken}`);
 
     res.json({
       success: true,

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Reservation = require('../models/Reservation');
 const { auth, adminAuth } = require('../middleware/auth');
+const { sendUserReservationNotification, sendAdminReservationNotification } = require('../utils/emailNotifications');
 
 // @route   POST /api/reservations
 // @desc    Crear una nueva reserva
@@ -63,6 +64,38 @@ router.post('/', auth, async (req, res) => {
     });
 
     await reservation.save();
+
+    // Enviar notificaciones por email
+    try {
+      console.log('📧 Enviando notificaciones de email...');
+      
+      // Datos para los emails
+      const emailData = {
+        fullName,
+        email,
+        phone,
+        propertyName,
+        checkIn: checkInDate,
+        checkOut: checkOutDate,
+        guests,
+        message
+      };
+
+      // Enviar email al usuario (no bloquear si falla)
+      sendUserReservationNotification(emailData).catch(error => {
+        console.error('Error enviando email al usuario:', error);
+      });
+
+      // Enviar email al admin (no bloquear si falla)
+      sendAdminReservationNotification(emailData).catch(error => {
+        console.error('Error enviando email al admin:', error);
+      });
+
+      console.log('✅ Notificaciones de email programadas');
+    } catch (error) {
+      console.error('❌ Error programando emails:', error);
+      // No fallar la reserva si hay error con los emails
+    }
 
     res.status(201).json({
       message: 'Reserva creada exitosamente',
