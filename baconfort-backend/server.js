@@ -27,6 +27,7 @@ const corsOrigins = [
   'https://baconfort-react.vercel.app',
   'https://baconfort-react-4p2uq0erp-robertogaona1985-1518s-projects.vercel.app',
   'https://baconfort-react-nwahl24d6-robertogaona1985-1518s-projects.vercel.app',
+  'https://olive-magpie-874253.hostingersite.com',
   process.env.FRONTEND_URL
 ];
 
@@ -101,7 +102,11 @@ const connectDB = async () => {
     }
     
     console.log('🔄 Connecting to MongoDB...');
-    await mongoose.connect(process.env.MONGODB_URI);
+    // Configuración para evitar advertencias de Mongoose
+    mongoose.set('strictQuery', false);
+    await mongoose.connect(process.env.MONGODB_URI, {
+      autoIndex: false // Evita la advertencia de índices duplicados
+    });
     console.log('✅ Connected to MongoDB');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
@@ -146,75 +151,12 @@ const setupEmailTransporter = () => {
 
 setupEmailTransporter();
 
-// Routes
-app.use('/api/properties', propertiesRoutes);
-app.use('/api/reservations', reservationsRoutes);
+// ========================================
+// RUTAS DE AUTENTICACIÓN (DEBEN IR PRIMERO)
+// ========================================
+// NOTA: Los endpoints de auth están ahora en routes/auth.js
 
-// Test routes (solo para desarrollo)
-if (process.env.NODE_ENV !== 'production') {
-  const testEmailRoutes = require('./routes/test-email');
-  app.use('/api/test', testEmailRoutes);
-}
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'BACONFORT API is running',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// API root
-app.get('/api', (req, res) => {
-  res.json({
-    message: 'BACONFORT API',
-    version: '1.0.0',
-    endpoints: ['/api/health', '/api/test', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/properties', '/api/reviews']
-  });
-});
-
-// Test endpoint
-app.get('/api/test', (req, res) => {
-  res.json({
-    message: 'Test endpoint working',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Routes middleware
-app.use('/api/properties', propertiesRoutes);
-
-// Health check
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'BACONFORT API is running',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-
-// API root
-app.get('/api', (req, res) => {
-  res.json({
-    message: 'BACONFORT API',
-    version: '1.0.0',
-    endpoints: ['/api/health', '/api/test', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/properties', '/api/reviews']
-  });
-});
-
-// Test endpoint
-app.get('/api/test', (req, res) => {
-  res.json({
-    message: 'Test endpoint working',
-    timestamp: new Date().toISOString()
-  });
-});
-
+/*
 // Registro real
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -267,49 +209,84 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+*/
 
-// Login admin simplificado (temporal para pruebas)
-app.post('/api/auth/admin-login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Credenciales de admin temporal para pruebas
-    if (email === 'admin@baconfort.com' && password === 'admin123') {
-      const adminToken = jwt.sign(
-        { userId: 'admin_temp', role: 'admin' },
-        process.env.JWT_SECRET || 'baconfort_jwt_secret',
-        { expiresIn: '24h' }
-      );
-      
-      res.json({
-        success: true,
-        message: 'Login admin exitoso',
-        token: adminToken,
-        user: {
-          _id: 'admin_temp',
-          name: 'Administrador',
-          email: 'admin@baconfort.com',
-          role: 'admin'
-        }
-      });
-    } else {
-      res.status(401).json({
-        success: false,
-        error: 'Credenciales incorrectas'
-      });
-    }
-  } catch (error) {
-    console.error('Error en login admin:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error interno del servidor'
-    });
-  }
+// ========================================
+// OTROS ENDPOINTS
+// ========================================
+
+// Test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: 'Test endpoint working',
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Middleware de autenticación modificado para aceptar modo demo
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'BACONFORT API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// API root
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'BACONFORT API',
+    version: '1.0.0',
+    endpoints: ['/api/health', '/api/test', '/api/auth/login', '/api/auth/register', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/properties', '/api/reviews']
+  });
+});
+
+// Routes
+const authRoutes = require('./routes/auth');
+const promotionsRoutes = require('./routes/promotions');
+
+app.use('/api/properties', propertiesRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/reservations', reservationsRoutes);
+app.use('/api/promotions', promotionsRoutes);
+
+// DEBUG: Endpoint especial para verificar autenticación
+app.put('/api/debug/auth-test', (req, res) => {
+  console.log('🔍 DEBUG - Petición recibida en /api/debug/auth-test');
+  console.log('📋 Headers:', req.headers);
+  console.log('🔑 Authorization:', req.headers.authorization);
+  
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  console.log('🎯 Token extraído:', token);
+  
+  if (token && token.startsWith('session_')) {
+    console.log('✅ DEBUG - Token de sesión reconocido');
+    return res.json({
+      success: true,
+      message: 'DEBUG: Token de sesión válido',
+      token: token,
+      server: 'CORRECTO - servidor principal'
+    });
+  }
+  
+  return res.status(403).json({
+    success: false,
+    error: 'DEBUG: Token no reconocido',
+    token: token,
+    server: 'CORRECTO - servidor principal'
+  });
+});
+
+// Middleware de autenticación modificado para aceptar tokens de sesión
 const authMiddleware = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
+  
+  console.log('🔑 Server Auth middleware - Token recibido:', token ? 'SÍ' : 'NO');
+  console.log('🔍 Server Token completo:', token);
   
   // Modo demo: aceptar token específico
   if (token === 'ADMIN_DEMO_TOKEN') {
@@ -318,7 +295,20 @@ const authMiddleware = (req, res, next) => {
     return next();
   }
   
+  // Verificar tokens simples del sistema (igual que en middleware/auth.js)
+  if (token && (token.startsWith('admin_token_') || 
+      token.startsWith('BACONFORT_ADMIN_TOKEN_') ||
+      token.startsWith('session_') ||
+      token === 'admin_baconfort_2025' ||
+      token === 'BACONFORT_ADMIN_2025_7D3F9K2L')) {
+    console.log('✅ Server Token admin reconocido:', token.substring(0, 20) + '...');
+    req.userId = 'admin_baconfort_2025';
+    req.userRole = 'admin';
+    return next();
+  }
+  
   if (!token) {
+    console.log('❌ Server No token provided');
     return res.status(401).json({ success: false, error: 'Token no proporcionado' });
   }
 
@@ -326,9 +316,10 @@ const authMiddleware = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'baconfort_jwt_secret');
     req.userId = decoded.userId;
     req.userRole = decoded.role;
+    console.log('✅ Server Token JWT válido');
     next();
   } catch (error) {
-    console.error('Token inválido:', error);
+    console.error('❌ Server Token inválido:', error);
     res.status(401).json({ success: false, error: 'Token inválido' });
   }
 };

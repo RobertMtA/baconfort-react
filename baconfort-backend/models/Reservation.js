@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const reservationSchema = new mongoose.Schema({
   // Información del usuario
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: String,  // Cambiado a String para soportar usuarios de prueba
     required: true
   },
   userEmail: {
@@ -72,6 +71,9 @@ const reservationSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now
+  },
+  cancelledAt: {
+    type: Date
   }
 });
 

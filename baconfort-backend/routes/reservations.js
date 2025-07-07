@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Reservation = require('../models/Reservation');
-const { auth, adminAuth } = require('../middleware/auth');
-const { sendUserReservationNotification, sendAdminReservationNotification } = require('../utils/emailNotifications');
+const { authenticateToken, adminAuth } = require('../middleware/auth');
+const { sendUserReservationNotification, sendAdminReservationNotification, sendUserCancellationNotification, sendAdminCancellationNotification } = require('../utils/emailNotifications');
 
 // @route   POST /api/reservations
 // @desc    Crear una nueva reserva
 // @access  Private
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
       propertyId,
@@ -48,7 +48,7 @@ router.post('/', auth, async (req, res) => {
 
     // Crear la reserva
     const reservation = new Reservation({
-      userId: req.user._id,
+      userId: req.user.id || req.user._id,
       userEmail: req.user.email,
       userName: req.user.name,
       propertyId,
@@ -68,6 +68,7 @@ router.post('/', auth, async (req, res) => {
     // Enviar notificaciones por email
     try {
       console.log('📧 Enviando notificaciones de email...');
+      console.log('🏠 Property name received:', propertyName);
       
       // Datos para los emails
       const emailData = {
@@ -118,12 +119,30 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/reservations/my
+// @desc    Obtener todas las reservas del usuario autenticado
+// @access  Private
+router.get('/my', authenticateToken, async (req, res) => {
+  try {
+    const reservations = await Reservation.find({ userId: req.user.id || req.user._id })
+      .sort({ createdAt: -1 }); // Más recientes primero
+
+    res.json(reservations);
+
+  } catch (error) {
+    console.error('Error obteniendo reservas del usuario:', error);
+    res.status(500).json({
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
 // @route   GET /api/reservations
 // @desc    Obtener todas las reservas del usuario autenticado
 // @access  Private
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticateToken, async (req, res) => {
   try {
-    const reservations = await Reservation.find({ userId: req.user._id })
+    const reservations = await Reservation.find({ userId: req.user.id || req.user._id })
       .sort({ createdAt: -1 }); // Más recientes primero
 
     res.json(reservations);
@@ -139,11 +158,11 @@ router.get('/', auth, async (req, res) => {
 // @route   GET /api/reservations/:id
 // @desc    Obtener una reserva específica del usuario
 // @access  Private
-router.get('/:id', auth, async (req, res) => {
+router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const reservation = await Reservation.findOne({
       _id: req.params.id,
-      userId: req.user._id
+      userId: req.user.id || req.user._id
     });
 
     if (!reservation) {
@@ -165,11 +184,11 @@ router.get('/:id', auth, async (req, res) => {
 // @route   PUT /api/reservations/:id/cancel
 // @desc    Cancelar una reserva
 // @access  Private
-router.put('/:id/cancel', auth, async (req, res) => {
+router.put('/:id/cancel', authenticateToken, async (req, res) => {
   try {
     const reservation = await Reservation.findOne({
       _id: req.params.id,
-      userId: req.user._id
+      userId: req.user.id || req.user._id
     });
 
     if (!reservation) {
@@ -191,7 +210,37 @@ router.put('/:id/cancel', auth, async (req, res) => {
     }
 
     reservation.status = 'cancelled';
+    reservation.cancelledAt = new Date();
     await reservation.save();
+
+    // Enviar notificaciones por email
+    console.log('📧 Enviando notificaciones de cancelación...');
+    
+    // Preparar datos para las notificaciones
+    const notificationData = {
+      _id: reservation._id,
+      fullName: reservation.fullName,
+      email: reservation.email,
+      propertyName: reservation.propertyName,
+      checkIn: reservation.checkIn,
+      checkOut: reservation.checkOut,
+      guests: reservation.guests,
+      cancelledAt: reservation.cancelledAt
+    };
+
+    // Enviar email al usuario (no bloquear si falla)
+    try {
+      await sendUserCancellationNotification(notificationData);
+    } catch (emailError) {
+      console.error('❌ Error enviando email al usuario:', emailError);
+    }
+
+    // Enviar email al admin (no bloquear si falla)
+    try {
+      await sendAdminCancellationNotification(notificationData);
+    } catch (emailError) {
+      console.error('❌ Error enviando email al admin:', emailError);
+    }
 
     res.json({
       message: 'Reserva cancelada exitosamente',
@@ -275,6 +324,49 @@ router.put('/admin/:id/status', adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error actualizando estado de reserva:', error);
+    res.status(500).json({
+      message: 'Error interno del servidor'
+    });
+  }
+});
+
+// @route   DELETE /api/reservations/admin/:id
+// @desc    Eliminar una reserva (solo admin)
+// @access  Private (Admin only)
+router.delete('/admin/:id', adminAuth, async (req, res) => {
+  try {
+    console.log('🗑️ ADMIN: Eliminando reserva:', req.params.id);
+    
+    const reservation = await Reservation.findById(req.params.id);
+    
+    if (!reservation) {
+      return res.status(404).json({
+        message: 'Reserva no encontrada'
+      });
+    }
+    
+    // Guardar información de la reserva antes de eliminarla
+    const reservationInfo = {
+      id: reservation._id,
+      propertyName: reservation.propertyName,
+      userName: reservation.fullName || reservation.userName,
+      userEmail: reservation.email || reservation.userEmail,
+      checkIn: reservation.checkIn,
+      checkOut: reservation.checkOut
+    };
+    
+    // Eliminar la reserva
+    await Reservation.findByIdAndDelete(req.params.id);
+    
+    console.log('✅ ADMIN: Reserva eliminada exitosamente:', reservationInfo);
+    
+    res.json({
+      message: 'Reserva eliminada exitosamente',
+      deletedReservation: reservationInfo
+    });
+    
+  } catch (error) {
+    console.error('❌ ADMIN: Error eliminando reserva:', error);
     res.status(500).json({
       message: 'Error interno del servidor'
     });

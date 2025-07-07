@@ -139,7 +139,6 @@ const propertySchema = new mongoose.Schema({
 });
 
 // Índices para búsquedas frecuentes
-propertySchema.index({ id: 1 });
 propertySchema.index({ status: 1, isActive: 1 });
 propertySchema.index({ 'location.coordinates': '2dsphere' });
 propertySchema.index({ 'stats.averageRating': -1 });

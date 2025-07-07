@@ -5,7 +5,7 @@ let emailTransporter;
 
 // Configurar el transporter
 try {
-  emailTransporter = nodemailer.createTransporter({
+  emailTransporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
@@ -27,6 +27,12 @@ const sendUserReservationNotification = async (reservationData) => {
 
   const { fullName, email, propertyName, checkIn, checkOut, guests, message } = reservationData;
   
+  console.log('📧 EMAIL DEBUG - Property name in notification:', propertyName);
+  console.log('📧 EMAIL DEBUG - Full reservation data:', reservationData);
+  
+  // Asegurar que propertyName tenga un valor
+  const displayPropertyName = propertyName || 'Departamento no especificado';
+  
   const checkInDate = new Date(checkIn).toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
@@ -44,7 +50,7 @@ const sendUserReservationNotification = async (reservationData) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: `Confirmación de Reserva - ${propertyName} | BaconFort`,
+    subject: `Confirmación de Reserva - ${displayPropertyName} | BaconFort`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -68,7 +74,7 @@ const sendUserReservationNotification = async (reservationData) => {
             <h4 style="color: #2c3e50; margin-bottom: 15px;">📋 Detalles de tu Reserva:</h4>
             <ul style="list-style: none; padding: 0; margin: 0;">
               <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
-                <strong style="color: #3498db;">🏠 Propiedad:</strong> ${propertyName}
+                <strong style="color: #3498db;">🏠 Propiedad:</strong> ${displayPropertyName}
               </li>
               <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
                 <strong style="color: #3498db;">📅 Check-in:</strong> ${checkInDate}
@@ -137,6 +143,9 @@ const sendAdminReservationNotification = async (reservationData) => {
 
   const { fullName, email, phone, propertyName, checkIn, checkOut, guests, message } = reservationData;
   
+  // Asegurar que propertyName tenga un valor
+  const displayPropertyName = propertyName || 'Departamento no especificado';
+  
   const checkInDate = new Date(checkIn).toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
@@ -156,7 +165,7 @@ const sendAdminReservationNotification = async (reservationData) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: adminEmail,
-    subject: `🔔 Nueva Reserva - ${propertyName} | BaconFort Admin`,
+    subject: `🔔 Nueva Reserva - ${displayPropertyName} | BaconFort Admin`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background-color: #e74c3c; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
@@ -175,7 +184,7 @@ const sendAdminReservationNotification = async (reservationData) => {
             <h4 style="color: #2c3e50; margin-bottom: 15px;">🏠 Información de la Propiedad:</h4>
             <ul style="list-style: none; padding: 0; margin: 0;">
               <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
-                <strong style="color: #e74c3c;">Propiedad:</strong> ${propertyName}
+                <strong style="color: #e74c3c;">Propiedad:</strong> ${displayPropertyName}
               </li>
               <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
                 <strong style="color: #e74c3c;">Check-in:</strong> ${checkInDate}
@@ -329,8 +338,266 @@ const sendPasswordResetEmail = async (email, name, resetToken) => {
   }
 };
 
+// Función para enviar notificación de cancelación al usuario
+const sendUserCancellationNotification = async (reservationData) => {
+  if (!emailTransporter) {
+    console.error('Email transporter no configurado');
+    return false;
+  }
+
+  const { fullName, email, propertyName, checkIn, checkOut, guests, cancelledAt } = reservationData;
+  
+  console.log('📧 EMAIL DEBUG - Sending cancellation notification to user:', email);
+  
+  const displayPropertyName = propertyName || 'Departamento no especificado';
+  
+  const checkInDate = new Date(checkIn).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const checkOutDate = new Date(checkOut).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const cancelledDate = new Date(cancelledAt || Date.now()).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Cancelación de Reserva - ${displayPropertyName} | BaconFort`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+          <h2 style="color: #721c24; text-align: center; margin-bottom: 10px;">
+            🏨 BaconFort - Reserva Cancelada
+          </h2>
+          <p style="text-align: center; color: #721c24; margin: 0;">
+            Tu reserva ha sido cancelada exitosamente
+          </p>
+        </div>
+        
+        <div style="background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h3 style="color: #dc3545; margin-bottom: 20px;">Hola ${fullName},</h3>
+          
+          <p style="color: #2c3e50; line-height: 1.6;">
+            Te confirmamos que tu reserva ha sido <strong>cancelada exitosamente</strong> según tu solicitud. 
+            A continuación encontrarás los detalles de la reserva cancelada:
+          </p>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="color: #2c3e50; margin-bottom: 15px;">📋 Detalles de la Reserva Cancelada:</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">🏠 Propiedad:</strong> ${displayPropertyName}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">📅 Check-in previsto:</strong> ${checkInDate}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">📅 Check-out previsto:</strong> ${checkOutDate}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">👥 Huéspedes:</strong> ${guests} persona(s)
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">⏰ Cancelada el:</strong> ${cancelledDate}
+              </li>
+              <li style="padding: 8px 0;">
+                <strong style="color: #dc3545;">✅ Estado:</strong> Cancelada
+              </li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #d1ecf1; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #17a2b8;">
+            <h4 style="color: #0c5460; margin-bottom: 10px;">ℹ️ Información importante:</h4>
+            <ul style="color: #0c5460; margin: 0; padding-left: 20px;">
+              <li>No se realizarán cargos por esta reserva cancelada</li>
+              <li>Puedes realizar una nueva reserva cuando gustes</li>
+              <li>Si tenías alguna promoción aplicada, consulta los términos y condiciones</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="color: #2c3e50; margin-bottom: 15px;">
+              <strong>¿Cambio de planes? ¡Siempre eres bienvenido!</strong>
+            </p>
+            <a href="https://baconfort.com" 
+               style="background-color: #e67e22; color: white; padding: 12px 25px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
+              🏠 Explorar Propiedades
+            </a>
+          </div>
+          
+          <div style="border-top: 1px solid #ecf0f1; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #7f8c8d; font-size: 14px; margin: 0;">
+              Si tienes alguna pregunta, no dudes en contactarnos.<br>
+              <strong>BaconFort</strong> - Tu hogar temporal<br>
+              📧 Email: info@baconfort.com<br>
+              📱 WhatsApp: +54 11 1234-5678
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    await emailTransporter.sendMail(mailOptions);
+    console.log('✅ Email de cancelación enviado exitosamente al usuario:', email);
+    return true;
+  } catch (error) {
+    console.error('❌ Error enviando email de cancelación al usuario:', error);
+    return false;
+  }
+};
+
+// Función para enviar notificación de cancelación al admin
+const sendAdminCancellationNotification = async (reservationData) => {
+  if (!emailTransporter) {
+    console.error('Email transporter no configurado');
+    return false;
+  }
+
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@baconfort.com';
+  const { fullName, email, propertyName, checkIn, checkOut, guests, cancelledAt, _id } = reservationData;
+  
+  console.log('📧 EMAIL DEBUG - Sending cancellation notification to admin:', adminEmail);
+  
+  const displayPropertyName = propertyName || 'Departamento no especificado';
+  
+  const checkInDate = new Date(checkIn).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const checkOutDate = new Date(checkOut).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const cancelledDate = new Date(cancelledAt || Date.now()).toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: adminEmail,
+    subject: `🚨 CANCELACIÓN - Reserva ${_id} | BaconFort Admin`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8d7da; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+          <h2 style="color: #721c24; text-align: center; margin-bottom: 10px;">
+            🚨 BaconFort Admin - Reserva Cancelada
+          </h2>
+          <p style="text-align: center; color: #721c24; margin: 0;">
+            Un cliente ha cancelado su reserva
+          </p>
+        </div>
+        
+        <div style="background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h3 style="color: #dc3545; margin-bottom: 20px;">⚠️ Cancelación de Reserva</h3>
+          
+          <p style="color: #2c3e50; line-height: 1.6;">
+            El cliente <strong>${fullName}</strong> ha cancelado su reserva. A continuación encontrarás todos los detalles:
+          </p>
+          
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h4 style="color: #2c3e50; margin-bottom: 15px;">📋 Información de la Reserva Cancelada:</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">🆔 ID Reserva:</strong> ${_id}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">🏠 Propiedad:</strong> ${displayPropertyName}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">👤 Cliente:</strong> ${fullName}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">📧 Email:</strong> ${email}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">📅 Check-in previsto:</strong> ${checkInDate}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1">
+                <strong style="color: #dc3545;">📅 Check-out previsto:</strong> ${checkOutDate}
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">👥 Huéspedes:</strong> ${guests} persona(s)
+              </li>
+              <li style="padding: 8px 0; border-bottom: 1px solid #ecf0f1;">
+                <strong style="color: #dc3545;">⏰ Cancelada el:</strong> ${cancelledDate}
+              </li>
+              <li style="padding: 8px 0;">
+                <strong style="color: #dc3545;">✅ Estado actual:</strong> Cancelada
+              </li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <h4 style="color: #856404; margin-bottom: 10px;">📊 Acciones Recomendadas:</h4>
+            <ul style="color: #856404; margin: 0; padding-left: 20px;">
+              <li>Verificar disponibilidad de la propiedad para nuevas reservas</li>
+              <li>Actualizar calendario de disponibilidad si es necesario</li>
+              <li>Revisar si hay lista de espera para estas fechas</li>
+              <li>Considerar contactar al cliente para feedback (opcional)</li>
+            </ul>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="https://baconfort.com/admin" 
+               style="background-color: #dc3545; color: white; padding: 12px 25px; text-decoration: none; border-radius: 25px; font-weight: bold; display: inline-block;">
+              🔧 Ver Panel de Admin
+            </a>
+          </div>
+          
+          <div style="border-top: 1px solid #ecf0f1; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #7f8c8d; font-size: 14px; margin: 0;">
+              <strong>BaconFort Admin Panel</strong><br>
+              Este es un email automático del sistema de gestión de reservas.<br>
+              📧 Sistema: admin@baconfort.com
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    await emailTransporter.sendMail(mailOptions);
+    console.log('✅ Email de cancelación enviado exitosamente al admin:', adminEmail);
+    return true;
+  } catch (error) {
+    console.error('❌ Error enviando email de cancelación al admin:', error);
+    return false;
+  }
+};
+
 module.exports = {
   sendUserReservationNotification,
   sendAdminReservationNotification,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendUserCancellationNotification,
+  sendAdminCancellationNotification
 };
