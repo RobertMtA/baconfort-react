@@ -215,6 +215,34 @@ router.put('/:id/prices', adminAuth, async (req, res) => {
   }
 });
 
+// @route   GET /api/properties/:id/blocked-dates
+// @desc    Obtener fechas bloqueadas de una propiedad
+// @access  Public
+router.get('/:id/blocked-dates', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`🔒 BACKEND: Obteniendo fechas bloqueadas para ${id}`);
+    
+    // Por ahora retornamos un array vacío ya que no hay fechas bloqueadas manualmente
+    // En el futuro esto podría venir de una tabla de fechas bloqueadas
+    const blockedDates = [];
+
+    console.log(`✅ BACKEND: Fechas bloqueadas para ${id}:`, blockedDates);
+
+    res.json({
+      success: true,
+      data: blockedDates,
+      propertyId: id
+    });
+
+  } catch (error) {
+    console.error('Error obteniendo fechas bloqueadas:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+});
+
 // @route   GET /api/properties/admin/all
 // @desc    Obtener todas las propiedades (incluye inactivas)
 // @access  Admin

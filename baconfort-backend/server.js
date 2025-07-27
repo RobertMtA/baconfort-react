@@ -246,11 +246,13 @@ app.get('/api', (req, res) => {
 // Routes
 const authRoutes = require('./routes/auth');
 const promotionsRoutes = require('./routes/promotions');
+const galleryRoutes = require('./routes/gallery');
 
 app.use('/api/properties', propertiesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/promotions', promotionsRoutes);
+app.use('/api/gallery', galleryRoutes);
 
 // DEBUG: Endpoint especial para verificar autenticación
 app.put('/api/debug/auth-test', (req, res) => {
